@@ -41,9 +41,9 @@ export function EducationPage() {
           <SplitHeading as="h1" type="words" className="mt-4 font-display text-4xl font-bold text-royal-navy sm:text-5xl">
             Education
           </SplitHeading>
-          <p className="mt-3 max-w-2xl text-text-subtle">
-            Academic standards, international certifications, and regional faculty under the Indian Section of CIDESCO International (Reg. No. FI1552).
-          </p>
+          <SplitCopy className="mt-3 max-w-2xl text-text-subtle">
+            <p>Academic standards, international certifications, and regional faculty under the Indian Section of CIDESCO International (Reg. No. FI1552).</p>
+          </SplitCopy>
         </PanelShell>
       </section>
 
@@ -52,16 +52,16 @@ export function EducationPage() {
           <TiltCard max={4} spotlight={false} className="rounded-2xl border border-white bg-white p-8 shadow-glass">
             <span className="text-[11px] font-bold uppercase tracking-wider text-electric-blue">National framework</span>
             <h2 className="mt-2 font-display text-2xl font-bold text-royal-navy">ABTC Certification</h2>
-            <p className="mt-3 text-sm leading-relaxed text-text-subtle">
-              Qualified skin therapists who have completed basic and advanced beauty training can sit the ABTC certificate examination. Schools may offer the additional certificate by entering students for the exam.
-            </p>
+            <SplitCopy className="mt-3 text-sm leading-relaxed text-text-subtle">
+              <p>Qualified skin therapists who have completed basic and advanced beauty training can sit the ABTC certificate examination. Schools may offer the additional certificate by entering students for the exam.</p>
+            </SplitCopy>
           </TiltCard>
           <TiltCard max={4} spotlight={false} className="rounded-2xl border border-white bg-white p-8 shadow-glass">
             <span className="text-[11px] font-bold uppercase tracking-wider text-electric-blue">Global benchmark</span>
             <h2 className="mt-2 font-display text-2xl font-bold text-royal-navy">CIDESCO Certification</h2>
-            <p className="mt-3 text-sm leading-relaxed text-text-subtle">
-              Since 1946, CIDESCO has been a major international body in aesthetics. The CIDESCO Diploma is among the most widely recognised beauty therapy qualifications.
-            </p>
+            <SplitCopy className="mt-3 text-sm leading-relaxed text-text-subtle">
+              <p>Since 1946, CIDESCO has been a major international body in aesthetics. The CIDESCO Diploma is among the most widely recognised beauty therapy qualifications.</p>
+            </SplitCopy>
           </TiltCard>
         </RiseGrid>
       </section>
@@ -72,10 +72,10 @@ export function EducationPage() {
           <SplitHeading type="words" className="mt-2 font-display text-3xl font-bold text-royal-navy">ABTC India Aim & Agenda</SplitHeading>
           <RiseGrid className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {AIMS.map((aim, i) => (
-              <div key={aim} className="flex items-start gap-3 rounded-xl border border-ice-blue bg-white p-4">
+              <TiltCard key={aim} max={3} spotlight={false} className="flex items-start gap-3 rounded-xl border border-ice-blue bg-white p-4">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ice-blue text-sm font-bold text-royal-navy">{i + 1}</span>
                 <p className="text-sm text-accent-navy">{aim}</p>
-              </div>
+              </TiltCard>
             ))}
           </RiseGrid>
         </PanelShell>
@@ -92,9 +92,9 @@ export function EducationPage() {
               <div key={region}>
                 <h3 className="font-display text-xl font-bold text-royal-navy">{region}</h3>
                 <p className="text-xs font-bold uppercase tracking-wider text-text-subtle">{people.length} members</p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <RiseGrid className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {people.map((name) => (
-                    <div key={name} className="flex items-center gap-3 rounded-xl border border-ice-blue bg-white px-4 py-3">
+                    <TiltCard key={name} max={3} spotlight={false} className="flex items-center gap-3 rounded-xl border border-ice-blue bg-white px-4 py-3">
                       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-royal-navy text-xs font-bold text-white">
                         {name.split(" ").slice(0, 2).map((w) => w[0]).join("")}
                       </span>
@@ -102,9 +102,9 @@ export function EducationPage() {
                         <p className="text-sm font-bold text-royal-navy">{name}</p>
                         <p className="text-[11px] uppercase tracking-wider text-text-subtle">Faculty · {region}</p>
                       </div>
-                    </div>
+                    </TiltCard>
                   ))}
-                </div>
+                </RiseGrid>
               </div>
             ))}
           </div>

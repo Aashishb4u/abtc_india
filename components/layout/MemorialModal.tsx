@@ -1,24 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Icon } from "@/components/ui/Icon";
 import { useIntro } from "@/lib/intro";
 
-const PORTRAIT =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDR-O6_crpA2nbM0AUkDq21akrW3ZKN53gmZtVf6uAOyJnJVgVx5uaBR1CM-A5cvztmjFslVrz64BtqvffDVmDKlNRbnIiLnKZAy2J69o9hvm7C49qiPJceB9f9pzJMsygS10NxeT1zJrhvxcrV9RPLEzLRvY4CjJuWnF4oPVUxbLjj_5g2tryR9ZQrpBNkrc6h2c-3T7g0wqebA1oLUTSHIG2SZt1kTiREqXe-fKFCeDNpe5to2ZDe9A";
+const PORTRAIT = "/images/about/maya-paranjapye-founder-portrait.jpg";
+
+/** Survives client navigation, resets on a full page load. */
+let shownThisVisit = false;
 
 export function MemorialModal() {
-  const { ready } = useIntro();
+  const { cleared } = useIntro();
+  const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!ready) return;
-    try {
-      if (sessionStorage.getItem("abtc-memorial") === "1") return;
-    } catch {}
-    const timer = window.setTimeout(() => setOpen(true), 1100);
-    return () => window.clearTimeout(timer);
-  }, [ready]);
+    if (!cleared || shownThisVisit) return;
+    setOpen(true);
+  }, [cleared]);
 
   useEffect(() => {
     if (!open) return;
@@ -34,68 +34,89 @@ export function MemorialModal() {
   }, [open]);
 
   function close() {
+    shownThisVisit = true;
     setOpen(false);
-    try {
-      sessionStorage.setItem("abtc-memorial", "1");
-    } catch {}
   }
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center p-3 sm:items-center sm:p-6">
-      <button type="button" aria-label="Close tribute" className="absolute inset-0 bg-midnight/70 backdrop-blur-sm" onClick={close} />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="memorial-title"
-        className="relative flex max-h-[min(88vh,640px)] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-white/80 bg-white shadow-glass-dark"
-      >
-        <div className="flex items-center justify-between gap-4 border-b border-ice-blue bg-gradient-to-r from-white to-ice-blue/60 px-5 py-3 sm:px-6">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-electric-blue">In revered remembrance</p>
-            <h2 id="memorial-title" className="font-display text-xl font-bold text-royal-navy sm:text-2xl">
-              Maya Paranjapye (Late)
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={close}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-royal-navy text-white"
-            aria-label="Close"
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-midnight p-4 sm:p-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.35 }}
+        >
+          <button type="button" aria-label="Close tribute" className="absolute inset-0" onClick={close} />
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="memorial-title"
+            className="relative flex max-h-[min(92vh,720px)] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-white/70 bg-white shadow-glass-dark md:flex-row"
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: 10 }}
+            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Icon name="close" />
-          </button>
-        </div>
+            <figure className="flex shrink-0 flex-col justify-center bg-gradient-to-b from-ice-blue to-white p-4 sm:p-5 md:w-[300px] lg:w-[340px]">
+              <img
+                src={PORTRAIT}
+                alt="Late Maya Paranjapye"
+                className="mx-auto h-auto max-h-[34vh] w-full rounded-2xl object-contain object-center shadow-glass md:max-h-[min(58vh,460px)]"
+              />
+              <figcaption className="mt-3 text-center">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-electric-blue">1945 — 2019</p>
+                <p className="font-display text-sm font-semibold text-royal-navy">Founder & trustee</p>
+              </figcaption>
+            </figure>
 
-        <div className="grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[240px_1fr] md:overflow-hidden">
-          <div className="flex items-center justify-center bg-ice-blue/40 p-4 md:p-5">
-            <img
-              src={PORTRAIT}
-              alt="Late Maya Paranjapye"
-              className="aspect-[4/5] w-44 rounded-2xl object-cover object-top shadow-glass md:w-full"
-            />
-          </div>
-          <div className="space-y-3 overflow-y-auto px-5 py-4 text-sm leading-relaxed text-accent-navy sm:px-6 md:max-h-[520px]">
-            <p>
-              ABTC (India) deeply regrets to announce the sudden passing away of our Founder Ms Maya Paranjapye on the 21st of September 2019 in USA. Ms Maya Paranjapye who was born on March 1945 was a renowned academician, who in 1996 spearheaded and brought the Beauty industry to its glory of what it is even today. Armed with skills and sheer determination she successfully managed to create a niche for herself and was considered a leader in the beauty world.
-            </p>
-            <p>
-              Maya worked for a year in the school of Chemistry of the University of Geneva (Switzerland) as Laboratory Assistant in Department of Biological and Special Organic Chemistry. During this period she had the opportunity to learn all aspects of modern Bio-Chemistry and Biochemical Analysis. This prompted Maya Paranjapye to undertake personal training in Beauty Culture at Geneva (Switzerland).
-            </p>
-            <p>
-              She continued her journey in the beauty business, did further studies in ‘Beauty Therapy’ diploma from ‘International School of Natural Beauty therapy’ London, U.K. in 1972. After her return from London she started teaching complete Diploma Course in ‘Beauty Therapy’ as per British Association Curriculum and thus Butic Institute was formed.
-            </p>
-            <p>
-              She was instrumental in forming the Association of Beauty therapy & cosmetology (India) in 1986. 1994 Association of Beauty therapy & cosmetology (India) became a CIDESCO section under her leadership. 1997 September her dream came true when India held the 1st ever CIDESCO conference in Mumbai India, which was the highlight of her career.
-            </p>
-            <p>She was a visionary, who put the Indian section of CIDESCO on the world map.</p>
-            <p className="font-display text-base font-semibold italic text-electric-blue">
-              We deeply mourn her sudden demise, a big salute to a great pioneer & leader.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+              <div className="flex items-start justify-between gap-4 px-6 pb-1 pt-5 sm:px-8 sm:pt-6">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-electric-blue">In revered remembrance</p>
+                  <h2 id="memorial-title" className="mt-1 font-display text-2xl font-bold text-royal-navy sm:text-3xl">
+                    Maya Paranjapye
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={close}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-ice-blue text-royal-navy transition hover:bg-ice-blue"
+                  aria-label="Close"
+                >
+                  <Icon name="close" />
+                </button>
+              </div>
+
+              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-6 py-3 text-sm leading-6 text-accent-navy sm:px-8 sm:text-[15px] sm:leading-7">
+                <p>
+                  ABTC (India) deeply regrets to announce the sudden passing of our Founder, Ms Maya Paranjapye, on 21 September 2019 in the USA. Born in March 1945, she was a renowned academician who, from 1996, helped bring the beauty industry to the standing it holds today.
+                </p>
+                <p>
+                  She spent a year in the School of Chemistry at the University of Geneva as a laboratory assistant, then trained in beauty culture in Geneva. In 1972 she earned a Beauty Therapy diploma from the International School of Natural Beauty Therapy, London. On her return she taught the British Association diploma and founded the Butic Institute.
+                </p>
+                <p>
+                  In 1986 she formed the Association of Beauty Therapy & Cosmetology (India). In 1994 it became a CIDESCO section under her leadership. In September 1997 India hosted its first CIDESCO conference in Mumbai — the highlight of her career. She put the Indian section of CIDESCO on the world map.
+                </p>
+                <p className="font-display text-base italic text-electric-blue">
+                  We deeply mourn her sudden demise. A salute to a great pioneer and leader.
+                </p>
+              </div>
+
+              <div className="flex justify-end border-t border-ice-blue px-6 py-3 sm:px-8">
+                <button
+                  type="button"
+                  onClick={close}
+                  className="rounded-xl bg-royal-navy px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

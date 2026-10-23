@@ -15,12 +15,13 @@ export function RiseGrid({ children, className }: { children: ReactNode; classNa
         const items = ref.current ? Array.from(ref.current.children) : [];
         if (!items.length) return;
         gsap.from(items, {
-          y: 40,
+          y: 28,
           autoAlpha: 0,
-          duration: 1,
-          stagger: 0.07,
+          duration: 0.8,
+          stagger: 0.06,
           ease: "expo.out",
-          scrollTrigger: { trigger: ref.current, start: "top 86%", once: true },
+          immediateRender: false,
+          scrollTrigger: { trigger: ref.current, start: "top 88%", once: true },
         });
       });
     },

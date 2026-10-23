@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AbtcSeal } from "@/components/ui/Seals";
+import { IMAGES } from "@/lib/data";
 import { SplitHeading } from "@/components/motion/SplitHeading";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
 
@@ -36,7 +36,7 @@ export function Footer() {
         <Stagger className="mb-12 grid grid-cols-1 gap-10 md:grid-cols-12" stagger={0.12}>
           <StaggerItem className="space-y-4 md:col-span-5">
             <div className="flex items-center gap-3">
-              <AbtcSeal tone="dark" className="h-8 w-12" />
+              <img src={IMAGES.logo} alt="ABTC India" className="h-14 w-auto object-contain" />
               <div>
                 <p className="font-display text-base font-bold tracking-wide">ABTC INDIA</p>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary-fixed">

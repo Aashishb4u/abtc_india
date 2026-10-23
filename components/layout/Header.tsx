@@ -4,10 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
-import { NAV } from "@/lib/data";
+import { IMAGES, NAV } from "@/lib/data";
 import { useIntro } from "@/lib/intro";
 import { cn } from "@/lib/utils";
-import { AbtcSeal, CidescoSeal } from "@/components/ui/Seals";
 import { Icon } from "@/components/ui/Icon";
 import { Magnetic } from "@/components/motion/Magnetic";
 import { EASE } from "@/components/motion/Reveal";
@@ -42,7 +41,7 @@ export function Header() {
         >
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
             <Link href="/" aria-label="ABTC India home" className="flex-shrink-0 transition-transform duration-300 hover:scale-105">
-              <AbtcSeal className="h-8 w-12 drop-shadow-sm sm:h-10 sm:w-16" />
+              <img src={IMAGES.logo} alt="ABTC India" className="h-14 w-auto object-contain sm:h-16" />
             </Link>
 
             <div className="flex-1 px-1 text-center sm:px-4">
@@ -58,7 +57,7 @@ export function Header() {
             </div>
 
             <div className="flex-shrink-0 transition-transform duration-300 hover:scale-105">
-              <CidescoSeal className="h-10 w-10 drop-shadow-sm sm:h-12 sm:w-12" />
+              <img src={IMAGES.cidescoLogo} alt="CIDESCO International" className="h-14 w-14 object-contain sm:h-16 sm:w-16" />
             </div>
           </div>
         </motion.div>
@@ -78,11 +77,11 @@ export function Header() {
             {/* Compact brand appears once the institutional bar collapses */}
             <motion.div
               initial={false}
-              animate={{ width: compact ? 168 : 0, opacity: compact ? 1 : 0 }}
+              animate={{ width: compact ? 210 : 0, opacity: compact ? 1 : 0 }}
               transition={{ duration: 0.55, ease: EASE }}
               className="hidden items-center gap-2.5 overflow-hidden md:flex"
             >
-              <AbtcSeal tone="dark" className="h-7 w-11 shrink-0" />
+              <img src={IMAGES.logo} alt="" className="h-9 w-auto shrink-0 object-contain" />
               <span className="whitespace-nowrap font-display text-sm font-bold">ABTC INDIA</span>
             </motion.div>
 

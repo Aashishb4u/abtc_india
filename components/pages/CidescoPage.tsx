@@ -94,7 +94,7 @@ export function CidescoPage() {
           <div className="lg:col-span-5">
             <TiltCard max={5} spotlight={false} className="rounded-2xl border-2 border-white bg-white p-2 shadow-glass">
               <ParallaxImage
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeIGFAkQHCYQUOWRchI7UyHj5oiMK47cEtw3mWnJZbigK-WvJe2c9tEcQTh_Bfqs8FkF5LUv1LT2T4rzXAfN5xKcgiDwj2dqFjpsp95NPwVyj5mnFnJRdD9bCjrrA8tXkncn9W56HiLDO9_wKrrkzBO8uclI5Eo4sWFTr6JHVBqiXIyeeVTLvtIu50CSWz7czXhsoF8VjrDZ1pM-qEg9p4z46JgMDVMhk4QM521IFYY_qNvYFX-eWtag"
+                src="/images/gallery/cidesco/65th-cidesco-world-congress-september-2017-mumbai-01.jpg"
                 alt="Clinical aesthetic treatment room reflecting Swiss-standard cosmetology education"
                 className="aspect-[4/5] h-auto"
               />

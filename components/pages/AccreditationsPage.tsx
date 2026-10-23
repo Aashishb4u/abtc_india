@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Magnetic } from "@/components/motion/Magnetic";
 import { PanelShell } from "@/components/motion/PanelShell";
 import { RiseGrid } from "@/components/motion/RiseGrid";
+import { SplitCopy } from "@/components/motion/SplitCopy";
 import { SplitHeading } from "@/components/motion/SplitHeading";
 import { TiltCard } from "@/components/motion/TiltCard";
 import { cn } from "@/lib/utils";
@@ -60,11 +61,11 @@ export function AccreditationsPage() {
               <SplitHeading as="h1" type="words" className="font-display text-4xl font-bold text-royal-navy sm:text-5xl">
                 Accreditations
               </SplitHeading>
-              <p className="mt-3 max-w-2xl text-text-subtle">
-                National and global recognition for affiliated academies under CIDESCO International standards.
-              </p>
+              <SplitCopy className="mt-3 max-w-2xl text-text-subtle">
+                <p>National and global recognition for affiliated academies under CIDESCO International standards.</p>
+              </SplitCopy>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-ice-blue bg-white p-3">
+            <TiltCard max={4} spotlight={false} className="flex items-center gap-3 rounded-xl border border-ice-blue bg-white p-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-royal-navy text-white">
                 <Icon name="verified" filled />
               </span>
@@ -72,7 +73,7 @@ export function AccreditationsPage() {
                 <p className="text-sm font-bold text-royal-navy">Reg. No. FI1552</p>
                 <p className="text-xs text-text-subtle">CIDESCO Section India</p>
               </div>
-            </div>
+            </TiltCard>
           </div>
         </PanelShell>
       </section>
@@ -82,9 +83,9 @@ export function AccreditationsPage() {
           <TiltCard max={4} spotlight={false} className="rounded-2xl border border-white/80 bg-white/80 p-8 shadow-glass">
             <p className="text-[11px] font-bold uppercase tracking-wider text-electric-blue">Curriculum standard</p>
             <h2 className="mt-2 font-display text-2xl font-bold text-royal-navy">CIDESCO School Accreditation</h2>
-            <p className="mt-3 text-sm leading-relaxed text-text-subtle">
-              Schools vetted for the international curriculum. The affiliated list is below.
-            </p>
+            <SplitCopy className="mt-3 text-sm leading-relaxed text-text-subtle">
+              <p>Schools vetted for the international curriculum. The affiliated list is below.</p>
+            </SplitCopy>
             <a href="#schools" className="mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-electric-blue">
               Affiliated school list <Icon name="arrow_forward" className="text-sm" />
             </a>
@@ -92,9 +93,9 @@ export function AccreditationsPage() {
           <TiltCard max={4} spotlight={false} className="rounded-2xl border border-white/80 bg-white/80 p-8 shadow-glass">
             <p className="text-[11px] font-bold uppercase tracking-wider text-electric-blue">Clinical quality</p>
             <h2 className="mt-2 font-display text-2xl font-bold text-royal-navy">CIDESCO Centre Accreditation</h2>
-            <p className="mt-3 text-sm leading-relaxed text-text-subtle">
-              Beauty centres accredited so aesthetic practice meets one high standard, nationally and internationally.
-            </p>
+            <SplitCopy className="mt-3 text-sm leading-relaxed text-text-subtle">
+              <p>Beauty centres accredited so aesthetic practice meets one high standard, nationally and internationally.</p>
+            </SplitCopy>
             <a href="mailto:abtcindia@gmail.com?subject=CIDESCO%20Center%20Accreditation" className="mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-electric-blue">
               More details <Icon name="open_in_new" className="text-sm" />
             </a>
@@ -109,7 +110,7 @@ export function AccreditationsPage() {
               <SplitHeading type="words" className="font-display text-3xl font-bold text-royal-navy">
                 ABTC Accreditation Schools
               </SplitHeading>
-              <p className="mt-2 max-w-xl text-sm text-text-subtle">Certified institutes under syllabus verification.</p>
+              <SplitCopy className="mt-2 max-w-xl text-sm text-text-subtle"><p>Certified institutes under syllabus verification.</p></SplitCopy>
             </div>
             <label className="flex items-center gap-2 rounded-xl border border-ice-blue bg-white px-3 py-2 lg:w-80">
               <Icon name="search" className="text-text-subtle" />
@@ -128,9 +129,9 @@ export function AccreditationsPage() {
               </button>
             ))}
           </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <RiseGrid key={city} className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {list.map((s) => (
-              <article key={s.name} className="flex flex-col justify-between rounded-xl border border-ice-blue bg-white p-5">
+              <TiltCard key={s.name} max={4} spotlight={false} className="flex h-full flex-col justify-between rounded-xl border border-ice-blue bg-white p-5">
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <span className="rounded-lg bg-ice-blue px-2 py-0.5 text-[11px] font-bold text-royal-navy">{s.city}</span>
@@ -142,10 +143,10 @@ export function AccreditationsPage() {
                 <p className="mt-4 flex items-center gap-2 border-t border-ice-blue pt-3 text-sm font-semibold text-royal-navy">
                   <Icon name="call" className="text-electric-blue" /> {s.phone}
                 </p>
-              </article>
+              </TiltCard>
             ))}
             {list.length === 0 && <p className="text-sm text-text-subtle">No schools match that search.</p>}
-          </div>
+          </RiseGrid>
         </PanelShell>
       </section>
 

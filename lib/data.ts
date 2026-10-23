@@ -23,24 +23,27 @@ export const NAV = [
   { label: "Contact Us", href: "/contact" },
 ] as const;
 
-/* Replace these with local files in /public (e.g. "/images/hero.jpg") for production. */
+/* Original files from https://www.abtcindia.com/, saved under /public/images. */
 export const IMAGES = {
+  logo: "/images/brand/abtc-india-logo.png",
+  cidescoLogo: "/images/brand/cidesco-international-logo.png",
   hero: "https://lh3.googleusercontent.com/aida/AEtjO1UIhzsnAAPGfzH5p-sZujK4_ckZ6z_vg86--24zp3kYpCm88N5FtGCp-xjq-UOmYMGEumcnOptAUM4-_PUTu6go0nxyJmoBEpBHs_jZlDVf6j3mtxQ7gKUuZDLMoGTlVUcUZFv5vNvgeRy2vHJmkDV6UKl7KYBxFp2L-FRtXbWX5vHzf-sLVaqRSkuhI7KJGKaUr31rfChTvh36n6i3bvQm4fGU5ODtHQf-58rK84QNFocwZ2iQqRkWpz0",
   about:
     "https://lh3.googleusercontent.com/aida/AEtjO1VKclp62NhlPw9o01p3QTi7Mix2p2_BjzDxvE0Li4yhloMaYNSnMnLKmAQdkvkHIl0ub8FCiw35eyTIOtaGMbxCyfax27mgtPFT3ETJ6cXfMWZ5CgU7q5Am77WUu88V1mobKuNcyfWgrXoQmIOtD-1Zz0-1SudZzJcDoRdNzQHYzkdJltzBCdqvTyw-_qyeoojIuLnfFJZzNSPzhJdMGWfHran2i-5TmLnugprsYXbXXpNhCOVhOU7CEdGD",
+  founder: "/images/about/maya-paranjapye-founder-portrait.jpg",
   news: [
     {
-      src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDwHMmTnxivwi0w6NPV7TwwEckJ18GYVniKpQzGT5aOydlAqbG8XZz2zExonThRQfTPpPL9GC2OTyTjSE3EF2jccFzowv_mVau0QfuEBKH_k2e52fnNRl5lzBn88sBjJ4uxJ-E2H-AcTGPvyiOQUDl-TJsXsFSGyFvs5weNrmSjdTTIGoD9xb_arJcll_s2UKZ0QiEPdXtsDibCgMGH1OsHnDZLBRQFsZMl2k9CrmhOR8J01_hLcZ2EVg",
+      src: "/images/news/abtc-cidesco-accreditation-ceremony.webp",
       alt: "Official accreditation signing ceremony with ABTC India trustees and salon executives",
       caption: "Official accreditation certificate presentation",
     },
     {
-      src: "https://lh3.googleusercontent.com/aida-public/AB6AXuAjkQEKd3cUcTeQqCnngiPIUdlhTdwjmyhzWfHWr55nvuALq0yAIDVvKZFN2-IlPWnY3FMD3jKyHa-1ra8JoytwkfcvjFOGbvSzi51LmsSX-lsv8rjMql-ms6HiLN0zwVmvwbWMI96sHQYhkqjZGcv-HKiaRQlDK5OROKU3p50PisOy8B8lbTYrhRtGaHSpFCYplC_ORzT__5ylDv88dhZASyoJ_aAwDyo4Lo8Ks-A-RO36U7MQw0lb6g",
+      src: "/images/news/abtc-committee-accreditation-meeting.webp",
       alt: "ABTC India executive committee at a conference table during the accreditation ceremony",
       caption: "Committee and executive delegation session",
     },
     {
-      src: "https://lh3.googleusercontent.com/aida-public/AB6AXuC-o2XWVJtSoW4wRKQEKcKE-OR7vcwlDTHw2kKjsGJlobsHOVXkWNdp72L2vE4g9MAiBTk54ScHrNaVgJHref2QRwfcsYTB0ymFf39FK2rFn2gjJ6MN_trjohyMuUPTkqPibGLUaJq5kG3JV8UavxUC4J68KP4aXZ_N4M_HBYXQVuAMs_5v2r4gJE-k1lBfi3NIN6rX0F676gYz38WktZhjXZACm-ZPA7_l6E6CUHCL-vwZxlnSilsF0w",
+      src: "/images/news/enrich-salons-cidesco-accreditation.webp",
       alt: "Leadership delegation celebrating the 75 salon CIDESCO accreditation milestone",
       caption: "Felicitation of the Enrich leadership group",
     },

@@ -13,7 +13,7 @@ import { useIntro } from "@/lib/intro";
 export function Preloader() {
   const root = useRef<HTMLDivElement>(null);
   const num = useRef<HTMLSpanElement>(null);
-  const { setReady } = useIntro();
+  const { setReady, setCleared } = useIntro();
   const [done, setDone] = useState(false);
 
   useGSAP(
@@ -27,6 +27,7 @@ export function Preloader() {
 
       if (reduce || seen) {
         setReady(true);
+        setCleared(true);
         setDone(true);
         return;
       }
@@ -90,7 +91,10 @@ export function Preloader() {
             borderBottomRightRadius: "50% 14vw",
             duration: 1.25,
             ease: "expo.inOut",
-            onComplete: () => setDone(true),
+            onComplete: () => {
+              setDone(true);
+              setCleared(true);
+            },
           },
           ">-0.1"
         )

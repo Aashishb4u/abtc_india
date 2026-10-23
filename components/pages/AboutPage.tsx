@@ -147,7 +147,7 @@ export function AboutPage() {
           <div className="md:col-span-2">
             <TiltCard max={4} spotlight={false} className={`${card} overflow-hidden`}>
               <ParallaxImage
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiBI6NSNR37YC8FcEr_bDMqcfKj1eq8LCGY_8pN09XAru3V0sZPwyHmdVM0Av5scVyTvBf6TJ_LcggDW82-MRjKyXfiJDSzIsyLxC9rMzLm74Q_vIorjblXbPlOVgiYRNqiYjPxelYe-eTDiz9beSAS5KAbeECe9fXGepIS_Aku_iFYQKpIZosqMRQaJYgEEHjIezOhwFZK2mFhdCuPd2VHzz7TjqDQWkJh6fmfmYcTgLxFY0eyFUB9Q"
+                src="/images/about/about-us-jone-thornicroft.jpg"
                 alt="Cosmetology practical examination hall with students in clinical uniforms"
                 className="h-80"
               />
@@ -188,7 +188,7 @@ export function AboutPage() {
             <div className="text-center lg:col-span-4">
               <TiltCard max={4} spotlight={false} className="mx-auto max-w-xs overflow-hidden rounded-xl border-2 border-electric-blue/40">
                 <ParallaxImage
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQnlQFhNxmap7GX-ChH2lZRcq8gNWk9_BVXoXLWlr9tYZH5vPV0_wgUbIR8qJR52gloYAbJfBNr8wIuo3OaSXy1OKDsa6MFgvNQxQOrwkqcYNLnWheOpb4mnc1kgz68O0u-UX30ziuBSAdXFR2W9ef9mzaVOjY4iqN6CMer1Nzj1L_6To62f_JWh4pw44QR7OVi3kCPEOT7GBmA4aeeVH4ewH2lW6O7s_vF1jGV3aMJodOHaZeBIWaLXIm9wcvngeEAXI"
+                  src="/images/about/maya-paranjapye-founder-portrait.jpg"
                   alt="Joan Thorneycroft MBE"
                   className="aspect-[4/5] h-auto grayscale transition duration-700 hover:grayscale-0"
                   speed={3}
@@ -275,28 +275,27 @@ export function AboutPage() {
         <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <Badge>Academic authorities</Badge>
-            <SplitHeading type="words" className="mt-3 font-display text-3xl font-bold text-royal-navy">
+            <h2 className="mt-3 font-display text-3xl font-bold text-royal-navy">
               CIDESCO International Examiners
-            </SplitHeading>
+            </h2>
           </div>
           <span className="w-fit rounded-lg bg-midnight px-4 py-2 text-xs font-bold uppercase tracking-wider text-white">5 registered examiners</span>
         </div>
-        <RiseGrid className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {EXAMINERS.map(([ini, name, role]) => (
-            <TiltCard key={ini} max={6} spotlight={false} className="rounded-2xl bg-gradient-to-b from-royal-purple to-midnight p-6 text-center text-white shadow-glass-dark">
+            <article key={ini} className="rounded-2xl bg-gradient-to-b from-royal-purple to-midnight p-6 text-center text-white shadow-glass-dark">
               <span className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-electric-blue font-display text-xl">{ini}</span>
               <h3 className="font-display font-bold">{name}</h3>
               <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-secondary-fixed">CIDESCO examiner</p>
               <p className="mt-2 text-xs text-white/60">{role}</p>
-            </TiltCard>
+            </article>
           ))}
-        </RiseGrid>
+        </div>
         </PanelShell>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 sm:px-6">
-        <RiseGrid className="grid gap-6 md:grid-cols-2">
-        <Reveal>
+        <div className="grid gap-6 md:grid-cols-2">
           <article className={`${card} border-t-4 border-t-electric-blue p-8`}>
             <Icon name="assignment_turned_in" className="text-3xl text-electric-blue" />
             <h3 className="mt-4 font-display text-xl font-semibold text-royal-navy">Examination & accreditation expansion</h3>
@@ -304,8 +303,6 @@ export function AboutPage() {
               The main focus of CIDESCO is to educate professionals, so we have started having our own examination. Today all over Maharashtra, we have more than 2000 ABTC certified beauticians. In the last 10 years, there has been a tremendous growth in this sector.
             </p>
           </article>
-        </Reveal>
-        <Reveal delay={0.1}>
           <article className={`${card} border-t-4 border-t-royal-navy p-8`}>
             <Icon name="account_balance" className="text-3xl text-royal-navy" />
             <h3 className="mt-4 font-display text-xl font-semibold text-royal-navy">Wellness industry growth & national advocacy</h3>
@@ -313,8 +310,7 @@ export function AboutPage() {
               The wellness industry in India has grown leaps and bounds. ABTC for the last 25 years was only spread in Maharashtra. Today, because schools are coming up all over India, we would like to spread our training modules, request government support, and invite the profession to help us grow.
             </p>
           </article>
-        </Reveal>
-        </RiseGrid>
+        </div>
       </section>
 
       <section id="schools" className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -370,22 +366,20 @@ export function AboutPage() {
       <section className="mx-auto max-w-7xl px-4 sm:px-6">
         <PanelShell className={light}>
         <Badge>Institutional alliances</Badge>
-        <SplitHeading type="words" className="mt-3 font-display text-3xl font-bold text-royal-navy">
+        <h2 className="mt-3 font-display text-3xl font-bold text-royal-navy">
           Associate Members of ABTC India
-        </SplitHeading>
-        <RiseGrid className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        </h2>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {MEMBERS.map(([name, place], i) => (
-            <Reveal key={name} delay={(i % 6) * 0.04}>
-              <div className={`${card} flex items-center justify-between p-4`}>
-                <div>
-                  <p className="font-display font-bold text-royal-navy">{name}</p>
-                  <p className="text-sm text-text-subtle">{place}</p>
-                </div>
-                <span className="rounded bg-ice-blue px-2 py-1 text-xs font-bold text-electric-blue">{String(i + 1).padStart(2, "0")}</span>
+            <div key={name} className={`${card} flex items-center justify-between p-4`}>
+              <div>
+                <p className="font-display font-bold text-royal-navy">{name}</p>
+                <p className="text-sm text-text-subtle">{place}</p>
               </div>
-            </Reveal>
+              <span className="rounded bg-ice-blue px-2 py-1 text-xs font-bold text-electric-blue">{String(i + 1).padStart(2, "0")}</span>
+            </div>
           ))}
-        </RiseGrid>
+        </div>
         </PanelShell>
       </section>
     </div>

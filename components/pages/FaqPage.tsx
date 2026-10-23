@@ -7,7 +7,9 @@ import { Icon } from "@/components/ui/Icon";
 import { Magnetic } from "@/components/motion/Magnetic";
 import { PanelShell } from "@/components/motion/PanelShell";
 import { RiseGrid } from "@/components/motion/RiseGrid";
+import { SplitCopy } from "@/components/motion/SplitCopy";
 import { SplitHeading } from "@/components/motion/SplitHeading";
+import { TiltCard } from "@/components/motion/TiltCard";
 import { cn } from "@/lib/utils";
 
 const light = "rounded-3xl border border-white/80 bg-white/70 p-6 shadow-glass backdrop-blur-xl sm:p-10 md:p-14";
@@ -45,9 +47,9 @@ export function FaqPage() {
           <SplitHeading as="h1" type="words" className="mt-4 font-display text-4xl font-bold text-royal-navy sm:text-5xl">
             Frequently Asked Questions
           </SplitHeading>
-          <p className="mx-auto mt-3 max-w-2xl text-text-subtle">
-            Clear guidance on ABTC examinations, CIDESCO international diplomas, accreditation, and membership.
-          </p>
+          <SplitCopy className="mx-auto mt-3 max-w-2xl text-text-subtle">
+            <p>Clear guidance on ABTC examinations, CIDESCO international diplomas, accreditation, and membership.</p>
+          </SplitCopy>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
             {FILTERS.map(([id, label]) => (
               <button
@@ -73,21 +75,21 @@ export function FaqPage() {
             ["verified_user", "Reg. No. FI1552", "The national section for professional cosmetology."],
             ["public", "40+ member nations", "A qualification recognised across the CIDESCO network."],
           ].map(([icon, title, body]) => (
-            <div key={title} className="rounded-2xl border border-white/80 bg-white/80 p-6 shadow-glass">
+            <TiltCard key={title} max={4} spotlight={false} className="rounded-2xl border border-white/80 bg-white/80 p-6 shadow-glass">
               <Icon name={icon} className="text-2xl text-electric-blue" />
               <h3 className="mt-3 font-display text-lg font-bold text-royal-navy">{title}</h3>
               <p className="mt-1 text-sm text-text-subtle">{body}</p>
-            </div>
+            </TiltCard>
           ))}
         </RiseGrid>
       </section>
 
       <section className="mx-auto max-w-4xl px-4 sm:px-6">
-        <div className="space-y-3">
+        <RiseGrid key={filter} className="space-y-3">
           {items.map(({ row, i }, index) => {
             const on = open === index;
             return (
-              <div key={row[1]} className="overflow-hidden rounded-2xl border border-white/80 bg-white shadow-glass">
+              <TiltCard key={row[1]} max={2} spotlight={false} className="overflow-hidden rounded-2xl border border-white/80 bg-white shadow-glass">
                 <button
                   type="button"
                   aria-expanded={on}
@@ -103,17 +105,17 @@ export function FaqPage() {
                   <Icon name="expand_more" className={cn("text-electric-blue transition", on && "rotate-180")} />
                 </button>
                 {on && <p className="border-t border-ice-blue px-5 py-4 text-sm leading-relaxed text-text-subtle">{row[2]}</p>}
-              </div>
+              </TiltCard>
             );
           })}
-        </div>
+        </RiseGrid>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 sm:px-6">
         <PanelShell className={dark}>
           <Badge dark>Executive secretariat</Badge>
           <SplitHeading type="words" className="mt-3 font-display text-3xl font-bold">Still have questions?</SplitHeading>
-          <p className="mt-2 max-w-xl text-white/75">The registrar can help with school affiliation, syllabus checks, and overseas credentials.</p>
+          <SplitCopy className="mt-2 max-w-xl text-white/75"><p>The registrar can help with school affiliation, syllabus checks, and overseas credentials.</p></SplitCopy>
           <div className="mt-6">
             <Magnetic strength={0.2}>
               <Button href="mailto:abtcindia@gmail.com" variant="white" iconLeft="mail">Contact secretariat</Button>

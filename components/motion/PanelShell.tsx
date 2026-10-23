@@ -12,5 +12,7 @@ export function PanelShell({
   className?: string;
   intro?: boolean;
 }) {
-  return <div className={cn("relative overflow-hidden", className)}>{children}</div>;
+  return (
+    <div className={cn("relative overflow-hidden [transform:translateZ(0)]", className)}>{children}</div>
+  );
 }
