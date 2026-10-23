@@ -1,12 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { IMAGES } from "@/lib/data";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Icon } from "@/components/ui/Icon";
 import { Magnetic } from "@/components/motion/Magnetic";
-import { ParallaxImage } from "@/components/motion/ParallaxImage";
 import { SplitCopy } from "@/components/motion/SplitCopy";
 import { SplitHeading } from "@/components/motion/SplitHeading";
 import { PanelShell } from "@/components/motion/PanelShell";
@@ -63,44 +60,12 @@ export function Hero() {
           </div>
 
           <div className="lg:col-span-5">
-            <TiltCard max={5} className="group mx-auto max-w-md lg:max-w-none">
-              <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-electric-blue/30 to-royal-purple/30 opacity-75 blur-lg transition duration-500 group-hover:opacity-100" />
-              <div className="relative overflow-hidden rounded-2xl border border-white/60 bg-white shadow-2xl md:rounded-3xl">
-                <ParallaxImage
-                  intro
-                  priority
-                  src={IMAGES.hero}
-                  alt="Indian woman receiving a gentle clinical skincare treatment in a bright, minimalist aesthetic academy clinic"
-                  sizes="(min-width:1024px) 40vw, 90vw"
-                  speed={6}
-                  className="h-[460px] sm:h-[520px]"
-                />
-                <motion.div
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute inset-x-4 bottom-4 z-10"
-                >
-                  <div className="flex items-center justify-between rounded-xl border border-white/20 bg-midnight/70 p-4 text-white shadow-glass-dark backdrop-blur-xl">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="relative flex h-2 w-2">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-electric-blue opacity-70" />
-                          <span className="relative inline-flex h-2 w-2 rounded-full bg-electric-blue" />
-                        </span>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-fixed">
-                          Swiss Academic Rigor
-                        </p>
-                      </div>
-                      <p className="font-display text-sm font-semibold tracking-wide">
-                        Global Aesthetic Standards
-                      </p>
-                    </div>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-electric-blue backdrop-blur-md transition-transform duration-300 group-hover:rotate-12">
-                      <Icon name="verified_user" filled className="text-xl" />
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
+            <TiltCard max={5} className="mx-auto max-w-md lg:max-w-none">
+              <img
+                src={IMAGES.hero}
+                alt="Clinical facial treatment. Swiss Academic Rigor, Global Aesthetic Standards."
+                className="h-auto w-full object-contain"
+              />
             </TiltCard>
           </div>
         </div>

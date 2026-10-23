@@ -27,9 +27,8 @@ export const NAV = [
 export const IMAGES = {
   logo: "/images/brand/abtc-india-logo.png",
   cidescoLogo: "/images/brand/cidesco-international-logo.png",
-  hero: "https://lh3.googleusercontent.com/aida/AEtjO1UIhzsnAAPGfzH5p-sZujK4_ckZ6z_vg86--24zp3kYpCm88N5FtGCp-xjq-UOmYMGEumcnOptAUM4-_PUTu6go0nxyJmoBEpBHs_jZlDVf6j3mtxQ7gKUuZDLMoGTlVUcUZFv5vNvgeRy2vHJmkDV6UKl7KYBxFp2L-FRtXbWX5vHzf-sLVaqRSkuhI7KJGKaUr31rfChTvh36n6i3bvQm4fGU5ODtHQf-58rK84QNFocwZ2iQqRkWpz0",
-  about:
-    "https://lh3.googleusercontent.com/aida/AEtjO1VKclp62NhlPw9o01p3QTi7Mix2p2_BjzDxvE0Li4yhloMaYNSnMnLKmAQdkvkHIl0ub8FCiw35eyTIOtaGMbxCyfax27mgtPFT3ETJ6cXfMWZ5CgU7q5Am77WUu88V1mobKuNcyfWgrXoQmIOtD-1Zz0-1SudZzJcDoRdNzQHYzkdJltzBCdqvTyw-_qyeoojIuLnfFJZzNSPzhJdMGWfHran2i-5TmLnugprsYXbXXpNhCOVhOU7CEdGD",
+  hero: "/images/home/hero-global-aesthetic-standards.png",
+  about: "/images/home/about-aesthetic-academy-training.png",
   founder: "/images/about/maya-paranjapye-founder-portrait.jpg",
   news: [
     {

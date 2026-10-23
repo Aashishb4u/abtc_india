@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Magnetic } from "@/components/motion/Magnetic";
-import { ParallaxImage } from "@/components/motion/ParallaxImage";
 import { Reveal } from "@/components/motion/Reveal";
 import { PanelShell } from "@/components/motion/PanelShell";
 import { RiseGrid } from "@/components/motion/RiseGrid";
@@ -92,16 +91,12 @@ export function CidescoPage() {
             </RiseGrid>
           </div>
           <div className="lg:col-span-5">
-            <TiltCard max={5} spotlight={false} className="rounded-2xl border-2 border-white bg-white p-2 shadow-glass">
-              <ParallaxImage
-                src="/images/gallery/cidesco/65th-cidesco-world-congress-september-2017-mumbai-01.jpg"
-                alt="Clinical aesthetic treatment room reflecting Swiss-standard cosmetology education"
-                className="aspect-[4/5] h-auto"
+            <TiltCard max={5} spotlight={false}>
+              <img
+                src="/images/about/Editorial Photography Frame.png"
+                alt="Clinical excellence. Practical assessments governed under direct scrutiny of CIDESCO International examiners."
+                className="h-auto w-full object-contain"
               />
-              <div className="pointer-events-none absolute inset-x-2 bottom-2 rounded-b-xl bg-gradient-to-t from-midnight/80 to-transparent p-5 text-white">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-fixed">Clinical excellence</p>
-                <p className="mt-1 text-sm">Practical assessments under CIDESCO International examiners.</p>
-              </div>
             </TiltCard>
           </div>
         </div>

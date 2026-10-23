@@ -145,15 +145,12 @@ export function AboutPage() {
         </div>
         <RiseGrid className="mt-10 grid gap-6 md:grid-cols-3">
           <div className="md:col-span-2">
-            <TiltCard max={4} spotlight={false} className={`${card} overflow-hidden`}>
-              <ParallaxImage
-                src="/images/about/about-us-jone-thornicroft.jpg"
-                alt="Cosmetology practical examination hall with students in clinical uniforms"
-                className="h-80"
+            <TiltCard max={4} spotlight={false}>
+              <img
+                src="/images/about/Background+Border+Shadow.png"
+                alt="Practical hands-on clinical training modules"
+                className="h-auto w-full object-contain"
               />
-              <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-midnight/80 to-transparent p-6 font-display text-white">
-                Practical hands-on clinical training modules
-              </p>
             </TiltCard>
           </div>
           <TiltCard max={5} spotlight={false} className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-royal-purple via-royal-navy to-midnight p-6 text-white shadow-glass-dark">

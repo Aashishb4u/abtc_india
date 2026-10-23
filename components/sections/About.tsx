@@ -4,7 +4,6 @@ import Link from "next/link";
 import { IMAGES } from "@/lib/data";
 import { Badge } from "@/components/ui/Badge";
 import { Icon } from "@/components/ui/Icon";
-import { ParallaxImage } from "@/components/motion/ParallaxImage";
 import { Reveal } from "@/components/motion/Reveal";
 import { SplitCopy } from "@/components/motion/SplitCopy";
 import { SplitHeading } from "@/components/motion/SplitHeading";
@@ -66,24 +65,12 @@ export function About() {
           </div>
 
           <div className="lg:col-span-5">
-            <TiltCard max={5} className="group overflow-hidden rounded-2xl border border-white/80 bg-white shadow-lg">
-              <ParallaxImage
+            <TiltCard max={5} className="mx-auto max-w-md lg:max-w-none">
+              <img
                 src={IMAGES.about}
-                alt="Students in navy and white lab coats learning advanced skin analysis in a cosmetology academy classroom"
-                sizes="(min-width:1024px) 38vw, 90vw"
-                className="h-80 sm:h-96"
+                alt="Academy students in a treatment room. Aesthetic Academy Training, Standard of Practical Excellence."
+                className="h-auto w-full object-contain"
               />
-              <div className="absolute inset-x-3 bottom-3 z-10 flex items-center justify-between rounded-xl border border-white/60 bg-white/85 p-3.5 shadow-md backdrop-blur-md transition-colors duration-300 group-hover:bg-white/95">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-electric-blue">
-                    Aesthetic Academy Training
-                  </p>
-                  <p className="text-xs font-bold text-royal-navy">Standard of Practical Excellence</p>
-                </div>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ice-blue text-electric-blue transition-transform duration-300 group-hover:scale-110">
-                  <Icon name="workspace_premium" className="text-lg" />
-                </div>
-              </div>
             </TiltCard>
           </div>
         </div>
