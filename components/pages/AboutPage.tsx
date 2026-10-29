@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { PhotoFrame } from "@/components/ui/PhotoFrame";
 import { Icon } from "@/components/ui/Icon";
 import { ParallaxImage } from "@/components/motion/ParallaxImage";
 import { Reveal } from "@/components/motion/Reveal";
@@ -145,11 +146,13 @@ export function AboutPage() {
         </div>
         <RiseGrid className="mt-10 grid gap-6 md:grid-cols-3">
           <div className="md:col-span-2">
-            <TiltCard max={4} spotlight={false}>
-              <img
-                src="/images/about/Background+Border+Shadow.png"
-                alt="Practical hands-on clinical training modules"
-                className="h-auto w-full object-contain"
+            <TiltCard max={4} spotlight={false} className="overflow-hidden rounded-3xl">
+              <PhotoFrame
+                src="/images/events/hands-on-demo.jpg"
+                alt="Hands-on clinical demonstration during an ABTC training session"
+                caption="Practical demonstration"
+                className="aspect-[16/10] min-h-[240px]"
+                position="object-[center_46%]"
               />
             </TiltCard>
           </div>

@@ -2,6 +2,7 @@
 
 import { IMAGES } from "@/lib/data";
 import { Badge } from "@/components/ui/Badge";
+import { PhotoFrame } from "@/components/ui/PhotoFrame";
 import { Button } from "@/components/ui/Button";
 import { Magnetic } from "@/components/motion/Magnetic";
 import { SplitCopy } from "@/components/motion/SplitCopy";
@@ -60,11 +61,13 @@ export function Hero() {
           </div>
 
           <div className="lg:col-span-5">
-            <TiltCard max={5} className="mx-auto max-w-md lg:max-w-none">
-              <img
+            <TiltCard max={5} className="mx-auto w-full max-w-md overflow-hidden rounded-3xl lg:max-w-none">
+              <PhotoFrame
                 src={IMAGES.hero}
-                alt="Clinical facial treatment. Swiss Academic Rigor, Global Aesthetic Standards."
-                className="h-auto w-full object-contain"
+                alt="ABTC seminar hall during a hands-on aesthetic training session."
+                caption="Live training session"
+                className="aspect-[5/4] sm:aspect-[4/5]"
+                position="object-[center_58%]"
               />
             </TiltCard>
           </div>

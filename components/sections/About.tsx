@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { IMAGES } from "@/lib/data";
 import { Badge } from "@/components/ui/Badge";
+import { PhotoFrame } from "@/components/ui/PhotoFrame";
 import { Icon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/motion/Reveal";
 import { SplitCopy } from "@/components/motion/SplitCopy";
@@ -65,11 +66,13 @@ export function About() {
           </div>
 
           <div className="lg:col-span-5">
-            <TiltCard max={5} className="mx-auto max-w-md lg:max-w-none">
-              <img
+            <TiltCard max={5} className="mx-auto w-full max-w-md overflow-hidden rounded-3xl lg:max-w-none">
+              <PhotoFrame
                 src={IMAGES.about}
-                alt="Academy students in a treatment room. Aesthetic Academy Training, Standard of Practical Excellence."
-                className="h-auto w-full object-contain"
+                alt="ABTC faculty and participants at an academy training gathering."
+                caption="Faculty and delegates"
+                className="aspect-[5/4] sm:aspect-[4/5]"
+                position="object-[center_42%]"
               />
             </TiltCard>
           </div>

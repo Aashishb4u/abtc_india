@@ -27,8 +27,8 @@ export const NAV = [
 export const IMAGES = {
   logo: "/images/brand/abtc-india-logo.png",
   cidescoLogo: "/images/brand/cidesco-international-logo.png",
-  hero: "/images/home/hero-global-aesthetic-standards.png",
-  about: "/images/home/about-aesthetic-academy-training.png",
+  hero: "/images/events/seminar-hall.jpg",
+  about: "/images/events/faculty-group.jpg",
   founder: "/images/about/maya-paranjapye-founder-portrait.jpg",
   news: [
     {

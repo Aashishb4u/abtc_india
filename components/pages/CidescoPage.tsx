@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/Badge";
+import { PhotoFrame } from "@/components/ui/PhotoFrame";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Magnetic } from "@/components/motion/Magnetic";
@@ -91,11 +92,13 @@ export function CidescoPage() {
             </RiseGrid>
           </div>
           <div className="lg:col-span-5">
-            <TiltCard max={5} spotlight={false}>
-              <img
-                src="/images/about/Editorial Photography Frame.png"
-                alt="Clinical excellence. Practical assessments governed under direct scrutiny of CIDESCO International examiners."
-                className="h-auto w-full object-contain"
+            <TiltCard max={5} spotlight={false} className="overflow-hidden rounded-3xl">
+              <PhotoFrame
+                src="/images/events/clinical-session.jpg"
+                alt="Faculty leading a clinical demonstration for delegates at an ABTC session."
+                caption="Clinical demonstration"
+                className="aspect-[5/4] sm:aspect-[4/5]"
+                position="object-[center_40%]"
               />
             </TiltCard>
           </div>
