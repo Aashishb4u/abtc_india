@@ -37,7 +37,7 @@ export function Header() {
           initial={false}
           animate={{ height: compact ? 0 : "auto", opacity: compact ? 0 : 1 }}
           transition={{ duration: 0.55, ease: EASE }}
-          className="overflow-hidden border-b border-royal-navy/10 bg-white/95 shadow-sm backdrop-blur-md"
+          className="hidden overflow-hidden border-b border-royal-navy/10 bg-white/95 shadow-sm backdrop-blur-md md:block"
         >
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
             <Link href="/" aria-label="ABTC India home" className="flex-shrink-0 transition-transform duration-300 hover:scale-105">
@@ -74,7 +74,7 @@ export function Header() {
               {/* <span className="text-xs font-bold uppercase tracking-wider">Navigation</span> */}
             </button>
 
-            {/* Compact brand appears once the institutional bar collapses */}
+            {/* Desktop: compact brand appears once the institutional bar collapses */}
             <motion.div
               initial={false}
               animate={{ width: compact ? 210 : 0, opacity: compact ? 1 : 0 }}

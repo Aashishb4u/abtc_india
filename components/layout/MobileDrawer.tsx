@@ -131,16 +131,6 @@ export function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => 
                   );
                 })}
               </nav>
-
-              <div className="mt-auto border-t border-white/10 pt-4">
-                <Link
-                  href="/education"
-                  onClick={onClose}
-                  className="btn-shimmer block w-full rounded-xl bg-gradient-to-r from-electric-blue to-electric-dark px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-md"
-                >
-                  Verify Diploma
-                </Link>
-              </div>
             </div>
           </motion.aside>
         </>
