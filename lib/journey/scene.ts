@@ -12,6 +12,9 @@ import {
   sanctuarySealTexture,
   charterTexture,
   mirrorTexture,
+  spaceSkyTexture,
+  limestoneTexture,
+  cityNightTexture,
 } from "./textures";
 
 /*
@@ -22,7 +25,7 @@ import {
  *
  * World layout
  * ------------
- * The globe floats high above the "ground world": centre (0, 142, -6), radius 36.
+ * The globe floats high above the "ground world": centre (0, 142, -6), radius 48.
  * It is rotated so Pune sits exactly on the lower-front point the camera
  * approaches. The campus + interior live around the origin (y = 0 ground).
  * A volumetric cloud deck (y 28..95) plus a camera-attached whiteout quad
@@ -30,7 +33,7 @@ import {
  */
 
 const GLOBE_CENTER = new THREE.Vector3(0, 142, -6);
-const GLOBE_R = 36;
+const GLOBE_R = 48;
 
 // Brand palette
 const COL = {
@@ -126,97 +129,101 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
   renderer.toneMappingExposure = 1.05;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x020514);
+  scene.background = new THREE.Color(0x000000);
 
   const camera = new THREE.PerspectiveCamera(46, 1, 0.05, 900);
   scene.add(camera);
 
   // ===== Global lights =====
-  scene.add(new THREE.HemisphereLight(0x9db9e8, 0x0a0f2e, 0.75));
-  const moon = new THREE.DirectionalLight(0xbfd9ff, 1.25);
+  const hemi = new THREE.HemisphereLight(0xe3e7ee, 0x12121c, 0.6);
+  scene.add(hemi);
+  // warm sun — the key light for the real Earth and the ground world
+  const moon = new THREE.DirectionalLight(0xfff0da, 2.4);
   moon.position.set(70, 120, 140);
   scene.add(moon);
+  // gentle neutral fill from the camera side so the planet's shadow half stays readable
+  const fill = new THREE.DirectionalLight(0xd8dde4, 0.5);
+  fill.position.set(-30, 170, 190);
+  scene.add(fill);
 
-  // ===== Starfield =====
-  const starCount = lowPower ? 900 : 1700;
+  // ===== Deep space (photographic sky sphere + a few bright sparkle stars) =====
+  const skyTex = spaceSkyTexture();
+  const sky = new THREE.Mesh(
+    new THREE.SphereGeometry(420, 32, 24),
+    new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, depthWrite: false })
+  );
+  sky.position.set(0, 90, 0);
+  scene.add(sky);
+
+  const starCount = lowPower ? 180 : 420;
   const starGeo = new THREE.BufferGeometry();
   const sp = new Float32Array(starCount * 3);
   for (let i = 0; i < starCount; i++) {
-    // random directions on a big sphere around the whole journey
     const v = new THREE.Vector3().randomDirection().multiplyScalar(300 + Math.random() * 120);
     sp[i * 3] = v.x;
     sp[i * 3 + 1] = v.y + 90;
     sp[i * 3 + 2] = v.z;
   }
   starGeo.setAttribute("position", new THREE.BufferAttribute(sp, 3));
-  const starTex = glowSprite("190,220,255");
   const stars = new THREE.Points(
     starGeo,
     new THREE.PointsMaterial({
-      map: starTex,
-      size: 2.2,
-      color: 0xcfe2ff,
+      map: glowSprite("255,248,236"),
+      size: 1.2,
+      color: 0xfff6ea,
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
-      opacity: 0.85,
+      opacity: 0.55,
     })
   );
   scene.add(stars);
-
-  // sparse layer of bigger, gold-tinted stars that twinkle
-  const starBCount = lowPower ? 120 : 260;
-  const starBGeo = new THREE.BufferGeometry();
-  const sb = new Float32Array(starBCount * 3);
-  for (let i = 0; i < starBCount; i++) {
-    const v = new THREE.Vector3().randomDirection().multiplyScalar(260 + Math.random() * 140);
-    sb[i * 3] = v.x;
-    sb[i * 3 + 1] = v.y + 90;
-    sb[i * 3 + 2] = v.z;
-  }
-  starBGeo.setAttribute("position", new THREE.BufferAttribute(sb, 3));
-  const starsBMat = new THREE.PointsMaterial({
-    map: glowSprite("255,226,170"),
-    size: 4.2,
-    color: 0xffe2b0,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    opacity: 0.7,
-  });
-  const starsB = new THREE.Points(starBGeo, starsBMat);
-  scene.add(starsB);
-
-  // deep-space nebulae behind the globe
-  const nebulae: THREE.Sprite[] = [];
-  const nebulaDefs: [string, V3, number, number][] = [
-    ["60,100,255", [-160, 220, -280], 420, 0.14],
-    ["140,70,255", [180, 90, -300], 360, 0.11],
-    ["20,160,232", [40, 300, -260], 300, 0.12],
-  ];
-  for (const [col, pos, sc, op] of nebulaDefs) {
-    const neb = new THREE.Sprite(
-      new THREE.SpriteMaterial({ map: glowSprite(col), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: op })
-    );
-    neb.position.set(...pos);
-    neb.scale.set(sc, sc * 0.72, 1);
-    scene.add(neb);
-    nebulae.push(neb);
-  }
 
   // ===== Globe =====
   const globe = new THREE.Group();
   globe.position.copy(GLOBE_CENTER);
   scene.add(globe);
 
+  // Real satellite imagery (NASA Blue Marble day map, night city-lights,
+  // topology bump, ocean specular mask). The procedural canvas texture only
+  // stands in for the first few frames until the real maps stream in.
+  const texLoader = new THREE.TextureLoader();
   const earthTex = earthTexture(lowPower ? 1 : 2);
   earthTex.anisotropy = maxAniso;
-  const earthMat = new THREE.MeshStandardMaterial({
+  const earthMat = new THREE.MeshPhongMaterial({
     map: earthTex,
     emissive: 0xffffff,
     emissiveMap: earthTex,
-    emissiveIntensity: 0.55,
-    roughness: 0.95,
+    emissiveIntensity: 0.5,
+    specular: new THREE.Color(0x1c242c),
+    shininess: 16,
+  });
+  texLoader.load("/textures/earth/earth_day.jpg", (day) => {
+    day.colorSpace = THREE.SRGBColorSpace;
+    day.anisotropy = maxAniso;
+    earthMat.map = day;
+    // self-glow drops away: the sun light does the work, night side stays dark
+    earthMat.emissiveMap = null;
+    earthMat.emissiveIntensity = 0;
+    earthMat.needsUpdate = true;
+    texLoader.load("/textures/earth/earth_night.jpg", (night) => {
+      night.colorSpace = THREE.SRGBColorSpace;
+      night.anisotropy = maxAniso;
+      earthMat.emissiveMap = night;
+      earthMat.emissiveIntensity = 1.15;
+      earthMat.needsUpdate = true;
+    });
+  });
+  texLoader.load("/textures/earth/earth_topology.png", (topo) => {
+    topo.anisotropy = maxAniso;
+    earthMat.bumpMap = topo;
+    earthMat.bumpScale = 0.55;
+    earthMat.needsUpdate = true;
+  });
+  texLoader.load("/textures/earth/earth_water.png", (water) => {
+    water.anisotropy = maxAniso;
+    earthMat.specularMap = water;
+    earthMat.needsUpdate = true;
   });
   const earth = new THREE.Mesh(new THREE.SphereGeometry(GLOBE_R, lowPower ? 64 : 96, lowPower ? 48 : 64), earthMat);
   globe.add(earth);
@@ -231,44 +238,21 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     emissiveMap: cloudsTex,
     emissiveIntensity: 0.25,
   });
+  texLoader.load("/textures/earth/earth_clouds.png", (cl) => {
+    cl.colorSpace = THREE.SRGBColorSpace;
+    cl.anisotropy = maxAniso;
+    orbitCloudsMat.map = cl;
+    orbitCloudsMat.emissiveMap = cl;
+    orbitCloudsMat.emissiveIntensity = 0.12;
+    orbitCloudsMat.needsUpdate = true;
+  });
   const orbitClouds = new THREE.Mesh(new THREE.SphereGeometry(GLOBE_R * 1.012, 48, 32), orbitCloudsMat);
   globe.add(orbitClouds);
-
-  // Fresnel atmosphere halo
-  const atmosMat = new THREE.ShaderMaterial({
-    uniforms: { c: { value: new THREE.Color(0x3fb4ff) } },
-    vertexShader: `
-      varying vec3 vN; varying vec3 vP;
-      void main() {
-        vN = normalize(normalMatrix * normal);
-        vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        vP = mv.xyz;
-        gl_Position = projectionMatrix * mv;
-      }`,
-    fragmentShader: `
-      uniform vec3 c; varying vec3 vN; varying vec3 vP;
-      void main() {
-        float f = pow(1.0 - abs(dot(normalize(vN), normalize(-vP))), 3.0);
-        gl_FragColor = vec4(c, f * 0.85);
-      }`,
-    transparent: true,
-    side: THREE.BackSide,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-  });
-  const atmos = new THREE.Mesh(new THREE.SphereGeometry(GLOBE_R * 1.16, 48, 32), atmosMat);
-  globe.add(atmos);
-
-  // soft outer halo — a second, wider breath of atmosphere
-  const atmosOuterMat = atmosMat.clone();
-  atmosOuterMat.uniforms = { c: { value: new THREE.Color(0x1b63d6) } };
-  const atmosOuter = new THREE.Mesh(new THREE.SphereGeometry(GLOBE_R * 1.34, 48, 32), atmosOuterMat);
-  globe.add(atmosOuter);
 
   // --- Orient the globe so Pune faces the camera's approach path ---
   const puneLocal = latLonToUnit(18.5204, 73.8567);
   // direction (from globe centre) that the stop cameras fly toward
-  const approach = new THREE.Vector3(0, 120.6, 24.2).sub(GLOBE_CENTER).normalize();
+  const approach = new THREE.Vector3(0, 114.2, 33.2).sub(GLOBE_CENTER).normalize();
   const mLocal = alignedBasis(puneLocal);
   const mWorld = alignedBasis(approach);
   globe.quaternion.setFromRotationMatrix(mWorld.multiply(mLocal.invert()));
@@ -288,21 +272,14 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
   decal.renderOrder = 2;
   globe.add(decal);
 
-  // --- Pune beacon: pulsing ring + glow ---
-  const beaconGlowTex = glowSprite("255,217,125");
+  // --- Pune pin: a tiny warm spark, no radar ring ---
+  const beaconGlowTex = glowSprite("255,236,210");
   const beacon = new THREE.Sprite(
-    new THREE.SpriteMaterial({ map: beaconGlowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.9 })
+    new THREE.SpriteMaterial({ map: beaconGlowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.22 })
   );
-  beacon.scale.set(3.4, 3.4, 1);
+  beacon.scale.set(0.85, 0.85, 1);
   beacon.position.copy(puneLocal).multiplyScalar(GLOBE_R * 1.006);
   globe.add(beacon);
-
-  const ringMat = new THREE.MeshBasicMaterial({ color: COL.gold, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false });
-  const ring = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.0, 48), ringMat);
-  ring.position.copy(puneLocal).multiplyScalar(GLOBE_R * 1.006);
-  ring.quaternion.setFromRotationMatrix(alignedBasis(puneLocal));
-  ring.renderOrder = 3;
-  globe.add(ring);
 
   // --- Zurich -> Pune connection arc with a travelling pulse ---
   const zurichLocal = latLonToUnit(47.3769, 8.5417);
@@ -319,26 +296,26 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
   const arcCurve = new THREE.CatmullRomCurve3(arcPts);
   const arc = new THREE.Mesh(
     new THREE.TubeGeometry(arcCurve, 64, 0.09, 6),
-    new THREE.MeshBasicMaterial({ color: COL.gold, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false })
+    new THREE.MeshBasicMaterial({ color: 0xc8b48a, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false })
   );
   globe.add(arc);
   const arcPulse = new THREE.Sprite(
     new THREE.SpriteMaterial({ map: beaconGlowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })
   );
-  arcPulse.scale.set(2.6, 2.6, 1);
+  arcPulse.scale.set(1.1, 1.1, 1);
   globe.add(arcPulse);
 
   // --- Gold light pillar rising from Pune ---
   const beamMat = new THREE.MeshBasicMaterial({
-    color: COL.gold,
+    color: 0xe8d4a8,
     transparent: true,
     opacity: 0,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
     side: THREE.DoubleSide,
   });
-  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.5, 8, 16, 1, true), beamMat);
-  beam.position.copy(puneLocal).multiplyScalar(GLOBE_R + 3.6);
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.22, 5, 12, 1, true), beamMat);
+  beam.position.copy(puneLocal).multiplyScalar(GLOBE_R + 2.4);
   beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), puneLocal);
   globe.add(beam);
 
@@ -346,7 +323,7 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
   const sat = new THREE.Group();
   const satBody = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 1.4), std(0xd8e2f0, 0.4, 0.7));
   sat.add(satBody);
-  const panelMat = new THREE.MeshStandardMaterial({ color: 0x0b2a66, emissive: 0x1450c8, emissiveIntensity: 0.9, roughness: 0.4 });
+  const panelMat = new THREE.MeshStandardMaterial({ color: 0x1a1c20, emissive: 0x3a3e46, emissiveIntensity: 0.25, roughness: 0.4 });
   for (const sx of [-1, 1]) {
     const panel = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.06, 1.1), panelMat);
     panel.position.x = sx * 2.2;
@@ -364,31 +341,31 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
   scene.add(deck);
   const puffTex = cloudPuffTexture();
   const puffTints: [number, number][] = [
-    [0xffffff, 0.42],
-    [0xf2f7ff, 0.62],
-    [0xe3edfc, 0.82],
-    [0xd4e2f6, 0.55],
+    [0xfffaf4, 0.55],
+    [0xf4efe6, 0.7],
+    [0xe8e2d6, 0.48],
+    [0xddd6c8, 0.38],
   ];
   const puffMats = puffTints.map(
     ([color, o]) => new THREE.SpriteMaterial({ map: puffTex, color, transparent: true, opacity: o, depthWrite: false })
   );
-  const puffCount = lowPower ? 34 : 104;
+  const puffCount = lowPower ? 50 : 160;
   const puffs: { s: THREE.Sprite; bx: number; seed: number }[] = [];
   for (let i = 0; i < puffCount; i++) {
     const s = new THREE.Sprite(puffMats[i % puffMats.length]);
-    const y = 28 + Math.pow(Math.random(), 0.8) * 66; // denser lower-mid
-    const x = (Math.random() - 0.5) * 95;
-    const z = -6 + Math.random() * 54;
-    const sc = 9 + Math.random() * 19;
+    const y = 22 + Math.pow(Math.random(), 0.7) * 78;
+    const x = (Math.random() - 0.5) * 110;
+    const z = -18 + Math.random() * 70;
+    const sc = 11 + Math.random() * 28;
     s.position.set(x, y, z);
-    s.scale.set(sc, sc * (0.5 + Math.random() * 0.25), 1);
+    s.scale.set(sc, sc * (0.38 + Math.random() * 0.28), 1);
     deck.add(s);
     puffs.push({ s, bx: x, seed: Math.random() * 100 });
   }
 
   // Camera-attached whiteout quad — peaks mid-descent to hide the world swap
   const whiteMat = new THREE.MeshBasicMaterial({
-    color: 0xe9f3fd,
+    color: 0xf0ebe3,
     transparent: true,
     opacity: 0,
     depthTest: false,
@@ -406,32 +383,46 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
 
   const paver = paverTexture();
   paver.repeat.set(34, 22);
-  const plaza = new THREE.Mesh(new THREE.PlaneGeometry(170, 110), std(0x9fb0c8, 0.95, 0, { map: paver }));
+  const plaza = new THREE.Mesh(new THREE.PlaneGeometry(170, 110), std(0xb3ac9d, 0.95, 0, { map: paver }));
   plaza.rotation.x = -Math.PI / 2;
   plaza.position.set(0, 0, 22);
   campus.add(plaza);
 
+  const stoneMap = limestoneTexture(lowPower ? 1 : 2);
+  stoneMap.anisotropy = maxAniso;
+  stoneMap.repeat.set(4, 2);
+  const stoneUpper = limestoneTexture(lowPower ? 1 : 2);
+  stoneUpper.anisotropy = maxAniso;
+  stoneUpper.repeat.set(5, 2);
   const mats = {
-    facade: std(0xdfe6f1, 0.85),
-    facadeDark: std(0x1d2a52, 0.8),
-    navy: std(COL.navy, 0.55),
-    gold: std(0xc9a24d, 0.35, 0.65),
-    goldGlow: new THREE.MeshStandardMaterial({ color: COL.gold, emissive: COL.gold, emissiveIntensity: 1.6 }),
-    blueGlow: new THREE.MeshStandardMaterial({ color: COL.blue, emissive: COL.blue, emissiveIntensity: 1.3 }),
-    windowLit: new THREE.MeshStandardMaterial({ color: 0xffdf9e, emissive: 0xffc46a, emissiveIntensity: 1.25 }),
-    windowCool: new THREE.MeshStandardMaterial({ color: 0xa8d8ff, emissive: 0x6fb8ef, emissiveIntensity: 0.9 }),
+    facade: new THREE.MeshStandardMaterial({ map: stoneMap, color: 0xe6e0d4, roughness: 0.92, metalness: 0.02 }),
+    facadeUpper: new THREE.MeshStandardMaterial({ map: stoneUpper, color: 0xefeae0, roughness: 0.88, metalness: 0.02 }),
+    facadeDark: std(0x3a342c, 0.82),
+    bronze: std(0x6a5a3e, 0.45, 0.55),
+    navy: std(0x2c2a26, 0.55),
+    graphite: std(0x2e2c28, 0.65, 0.25),
+    gold: std(0xb89a5a, 0.4, 0.55),
+    goldGlow: new THREE.MeshStandardMaterial({ color: 0xc4a56a, emissive: 0x8a7040, emissiveIntensity: 0.55 }),
+    windowLit: new THREE.MeshStandardMaterial({
+      color: 0x2a241c,
+      emissive: 0xe8c48a,
+      emissiveIntensity: 0.55,
+      roughness: 0.18,
+      metalness: 0.15,
+    }),
     glass: new THREE.MeshPhysicalMaterial({
-      color: 0xbcd8ea,
-      roughness: 0.06,
+      color: 0x2c2824,
+      roughness: 0.08,
+      metalness: 0.25,
       transparent: true,
-      opacity: 0.22,
+      opacity: 0.38,
       depthWrite: false,
       side: THREE.DoubleSide,
     }),
-    trunk: std(0x5c4530, 0.9),
-    leaf: std(0x2f7a46, 0.8),
-    leafDark: std(0x1f5c33, 0.85),
-    cityDark: std(0x0a1130, 0.9),
+    trunk: std(0x4a3828, 0.9),
+    leaf: std(0x3a5c38, 0.85),
+    leafDark: std(0x2a4428, 0.88),
+    cityDark: std(0x1c1b18, 0.9),
   };
 
   // --- Building shell (interior lives inside: x -11..11, z -10.5..6, h 4.2) ---
@@ -447,54 +438,60 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
   box(bld, [0.35, IH, 16.9], mats.facade, [11, 0, -2.25]);
   box(bld, [22.4, IH, 0.35], wallIn, [0, 0, -10.5]);
   // upper storey (solid) + roof — front face flush with the ground-floor wall
-  box(bld, [23, 4.6, 16.85], mats.facade, [0, IH, -2.25]);
+  box(bld, [23, 4.6, 16.85], mats.facadeUpper, [0, IH, -2.25]);
   box(bld, [23.6, 0.3, 17.6], mats.facadeDark, [0, IH + 4.6, -2.25]);
-  // gold trims between floors and at the roofline
-  box(bld, [23.2, 0.12, 0.12], mats.goldGlow, [0, IH + 0.02, 6.32]);
-  box(bld, [23.2, 0.12, 0.12], mats.goldGlow, [0, IH + 4.52, 6.32]);
+  // stone cornice between floors and a parapet at the roofline
+  box(bld, [23.5, 0.28, 0.55], mats.facade, [0, IH - 0.04, 6.22]);
+  box(bld, [23.4, 0.55, 0.32], mats.facade, [0, IH + 4.55, 6.28]);
+  // pilasters on the front facade
+  for (const x of [-10.4, -6.6, 6.6, 10.4]) {
+    box(bld, [0.42, IH + 4.6, 0.28], mats.facade, [x, 0, 6.22]);
+  }
 
-  // ground-floor windows, warm-lit, with navy frames
+  // ground-floor windows, recessed, bronze frames, warm interior
   for (const x of [-4.4, -8.1, 4.4, 8.1]) {
-    box(bld, [2.3, 1.9, 0.1], mats.facadeDark, [x, 1.15, 6.14]);
-    box(bld, [2.0, 1.6, 0.1], mats.windowLit, [x, 1.3, 6.17]);
+    box(bld, [2.4, 2.05, 0.12], mats.bronze, [x, 1.05, 6.12]);
+    box(bld, [2.05, 1.7, 0.06], mats.windowLit, [x, 1.22, 6.18]);
+    box(bld, [2.5, 0.1, 0.22], mats.facade, [x, 1.0, 6.22]);
   }
   // upper windows flanking the sign
   for (const x of [-9.6, -7.9, 7.9, 9.6]) {
-    box(bld, [1.25, 1.7, 0.08], mats.windowCool, [x, IH + 1.7, 6.2]);
+    box(bld, [1.35, 1.85, 0.1], mats.bronze, [x, IH + 1.55, 6.16]);
+    box(bld, [1.12, 1.55, 0.06], mats.windowLit, [x, IH + 1.7, 6.2]);
   }
 
   // --- Main sign ---
   const sign = abtcSignTexture();
   const signMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(12.6, 3.15),
-    new THREE.MeshStandardMaterial({ map: sign.tex, emissive: 0xffffff, emissiveMap: sign.tex, emissiveIntensity: 0.75, roughness: 0.6 })
+    new THREE.MeshStandardMaterial({ map: sign.tex, emissive: 0xffffff, emissiveMap: sign.tex, emissiveIntensity: 0.22, roughness: 0.55 })
   );
   signMesh.position.set(0, IH + 2.4, 6.46);
   campus.add(signMesh);
-  box(campus, [13.1, 3.6, 0.12], mats.navy, [0, IH + 0.6, 6.3]);
+  box(campus, [13.1, 3.6, 0.12], mats.graphite, [0, IH + 0.6, 6.3]);
 
   // --- Entrance: canopy, columns, pad, door ---
-  box(bld, [7.2, 0.2, 2.8], mats.facadeDark, [0, 3.35, 7.3]);
-  box(bld, [7.2, 0.07, 0.07], mats.goldGlow, [0, 3.32, 8.68]);
+  box(bld, [7.2, 0.22, 2.8], mats.facade, [0, 3.35, 7.3]);
+  box(bld, [7.2, 0.06, 0.06], mats.bronze, [0, 3.32, 8.68]);
   for (const x of [-2.9, 2.9]) {
-    cyl(bld, 0.26, 0.3, 3.35, mats.navy, [x, 0, 7.9], 18);
-    cyl(bld, 0.34, 0.34, 0.12, mats.gold, [x, 3.23, 7.9], 18);
+    cyl(bld, 0.28, 0.32, 3.35, mats.facade, [x, 0, 7.9], 18);
+    cyl(bld, 0.36, 0.36, 0.12, mats.bronze, [x, 3.23, 7.9], 18);
   }
-  box(bld, [7.4, 0.09, 3.6], std(0xcfd8e6, 0.9), [0, 0, 7.6]);
-  box(bld, [7.4, 0.05, 0.1], mats.goldGlow, [0, 0.07, 9.35]);
+  box(bld, [7.4, 0.09, 3.6], std(0xc4b79a, 0.9), [0, 0, 7.6]);
+  box(bld, [7.4, 0.04, 0.08], mats.bronze, [0, 0.07, 9.35]);
 
   // door frame
-  box(bld, [0.14, 3.1, 0.3], mats.navy, [-1.5, 0, 6]);
-  box(bld, [0.14, 3.1, 0.3], mats.navy, [1.5, 0, 6]);
-  box(bld, [3.14, 0.14, 0.3], mats.navy, [0, 3.0, 6]);
+  box(bld, [0.14, 3.1, 0.3], mats.graphite, [-1.5, 0, 6]);
+  box(bld, [0.14, 3.1, 0.3], mats.graphite, [1.5, 0, 6]);
+  box(bld, [3.14, 0.14, 0.3], mats.graphite, [0, 3.0, 6]);
   // glass double doors on pivots
   const makeLeaf = (hingeX: number, dir: 1 | -1) => {
     const pivot = group(bld, [hingeX, 0, 6]);
     box(pivot, [1.38, 2.86, 0.04], mats.glass, [dir * 0.72, 0.05, 0]);
-    box(pivot, [1.44, 0.1, 0.07], mats.navy, [dir * 0.72, 0, 0]);
-    box(pivot, [1.44, 0.1, 0.07], mats.navy, [dir * 0.72, 2.84, 0]);
-    box(pivot, [0.07, 2.95, 0.07], mats.navy, [dir * 0.05, 0, 0]);
-    box(pivot, [0.07, 2.95, 0.07], mats.navy, [dir * 1.4, 0, 0]);
+    box(pivot, [1.44, 0.1, 0.07], mats.graphite, [dir * 0.72, 0, 0]);
+    box(pivot, [1.44, 0.1, 0.07], mats.graphite, [dir * 0.72, 2.84, 0]);
+    box(pivot, [0.07, 2.95, 0.07], mats.graphite, [dir * 0.05, 0, 0]);
+    box(pivot, [0.07, 2.95, 0.07], mats.graphite, [dir * 1.4, 0, 0]);
     box(pivot, [0.05, 0.6, 0.09], mats.gold, [dir * 1.22, 1.15, 0.05]);
     return pivot;
   };
@@ -505,14 +502,14 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
   const makeTree = (pos: V3, s = 1) => {
     const g = group(campus, pos);
     g.scale.setScalar(s);
-    box(g, [1.0, 0.55, 1.0], mats.navy, [0, 0, 0]);
+    box(g, [1.0, 0.55, 1.0], mats.graphite, [0, 0, 0]);
     box(g, [1.06, 0.07, 1.06], mats.gold, [0, 0.55, 0]);
     cyl(g, 0.09, 0.13, 1.4, mats.trunk, [0, 0.6, 0], 8);
     const geo = new THREE.IcosahedronGeometry(0.75, 1);
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 7; i++) {
       const b = new THREE.Mesh(geo, i % 2 ? mats.leaf : mats.leafDark);
-      b.position.set((Math.random() - 0.5) * 0.7, 2.1 + (Math.random() - 0.4) * 0.7, (Math.random() - 0.5) * 0.7);
-      b.scale.setScalar(0.72 + Math.random() * 0.5);
+      b.position.set((Math.random() - 0.5) * 0.85, 1.9 + (Math.random() - 0.35) * 0.9, (Math.random() - 0.5) * 0.85);
+      b.scale.setScalar(0.65 + Math.random() * 0.55);
       g.add(b);
     }
     return g;
@@ -547,7 +544,7 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
   }
   // soft bloom halo behind the main sign
   const signHalo = new THREE.Sprite(
-    new THREE.SpriteMaterial({ map: glowSprite("90,180,255"), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.3 })
+    new THREE.SpriteMaterial({ map: glowSprite("255,224,170"), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.1 })
   );
   signHalo.position.set(0, IH + 2.4, 6.6);
   signHalo.scale.set(17, 6, 1);
@@ -564,28 +561,39 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
   entLight.position.set(0, 3.6, 8.6);
   campus.add(entLight);
   // sign wash
-  const signLight = new THREE.PointLight(0xcfe8ff, 5, 12, 1.8);
+  const signLight = new THREE.PointLight(0xffe2c4, 3.2, 12, 1.8);
   signLight.position.set(0, IH + 2.4, 9);
   campus.add(signLight);
 
   // --- Distant city silhouettes ---
-  const cityWinGeo = new THREE.PlaneGeometry(0.55, 0.75);
+  const cityTexA = cityNightTexture(3);
+  const cityTexB = cityNightTexture(11);
+  cityTexA.anisotropy = maxAniso;
+  cityTexB.anisotropy = maxAniso;
+  const cityMatA = new THREE.MeshStandardMaterial({
+    map: cityTexA,
+    emissive: 0xffffff,
+    emissiveMap: cityTexA,
+    emissiveIntensity: 0.45,
+    roughness: 0.9,
+  });
+  const cityMatB = new THREE.MeshStandardMaterial({
+    map: cityTexB,
+    emissive: 0xffffff,
+    emissiveMap: cityTexB,
+    emissiveIntensity: 0.4,
+    roughness: 0.9,
+  });
   const rand = (a: number, b: number) => a + Math.random() * (b - a);
   const citySpots: V3[] = [];
-  for (let i = 0; i < 9; i++) citySpots.push([rand(-70, 70), 0, rand(-70, -44)]);
-  for (const side of [-1, 1]) for (let i = 0; i < 4; i++) citySpots.push([side * rand(26, 62), 0, rand(-26, 8)]);
+  for (let i = 0; i < 11; i++) citySpots.push([rand(-70, 70), 0, rand(-70, -44)]);
+  for (const side of [-1, 1]) for (let i = 0; i < 5; i++) citySpots.push([side * rand(26, 62), 0, rand(-26, 8)]);
   for (const [cx, , cz] of citySpots) {
     if (Math.abs(cx) < 15 && cz > -40) continue;
-    const w = rand(4.5, 8.5);
-    const h = rand(7, 20);
-    const d = rand(4.5, 8);
-    box(campus, [w, h, d], mats.cityDark, [cx, 0, cz]);
-    const winCount = 4 + ((Math.random() * 4) | 0);
-    for (let k = 0; k < winCount; k++) {
-      const win = new THREE.Mesh(cityWinGeo, Math.random() > 0.4 ? mats.windowLit : mats.windowCool);
-      win.position.set(cx + rand(-w / 2 + 0.6, w / 2 - 0.6), rand(1.5, h - 1), cz + d / 2 + 0.02);
-      campus.add(win);
-    }
+    const w = rand(5, 10);
+    const h = rand(8, 24);
+    const d = rand(5, 9);
+    box(campus, [w, h, d], Math.random() > 0.5 ? cityMatA : cityMatB, [cx, 0, cz]);
   }
 
   // ===== Interior: Master Aesthetic Sanctuary =====
@@ -763,7 +771,7 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     pl.position.set(x, IH - 0.5, z);
     campus.add(pl);
   }
-  const sealBlue = new THREE.PointLight(0x4fb9ff, 3.5, 8, 1.8);
+  const sealBlue = new THREE.PointLight(0x86b8dc, 2.2, 8, 1.8);
   sealBlue.position.set(0, 2.2, -8.6);
   campus.add(sealBlue);
 
@@ -802,7 +810,7 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     const f = Math.min(n - 1e-6, progressToFloatIndex(p));
     const i = Math.floor(f);
     // dwell at each stop: travel happens in the middle of each segment
-    const t = easeInOut(smooth(0.12, 0.88, f - i));
+    const t = easeInOut(smooth(0.08, 0.92, f - i));
     tmpPos.lerpVectors(camPos[i], camPos[i + 1], t);
     tmpLook.lerpVectors(camLook[i], camLook[i + 1], t);
     poseFov = fovs[i] + (fovs[i + 1] - fovs[i]) * t;
@@ -833,8 +841,8 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     lastT = now;
     el += dt;
 
-    // critically-damped-ish chase: this is what makes the travel feel human
-    current += (target - current) * Math.min(1, dt * 4.2);
+    // heavy chase: the camera eases toward the scroll target instead of snapping
+    current += (target - current) * Math.min(1, dt * 2.15);
     if (Math.abs(target - current) < 1e-5) current = target;
 
     const f = poseAt(current);
@@ -861,14 +869,17 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     // exposure warms up as we step inside
     renderer.toneMappingExposure = 1.03 + 0.13 * smooth(2.7, 3.7, f);
 
+    // the strong sun exists for the real Earth — dim it on the ground so the
+    // campus keeps its moody evening light from lamps and windows
+    const groundMix = smooth(1.9, 2.6, f);
+    moon.intensity = 2.4 - 1.95 * groundMix;
+    fill.intensity = 0.5 - 0.44 * groundMix;
+    hemi.intensity = 0.6 - 0.22 * groundMix;
+
     // slow idle motion
-    stars.rotation.y = el * 0.004;
-    starsB.rotation.y = -el * 0.0028;
-    starsBMat.opacity = 0.45 + 0.3 * Math.sin(el * 1.4);
+    stars.rotation.y = el * 0.003;
+    sky.rotation.y = el * 0.0012;
     orbitClouds.rotation.y = el * 0.0045;
-    for (let i = 0; i < nebulae.length; i++) {
-      nebulae[i].material.opacity = nebulaDefs[i][3] * (0.8 + 0.25 * Math.sin(el * 0.3 + i * 2.1));
-    }
 
     // satellite glides on an inclined orbit, fading away as we commit to India
     const sa = el * 0.1;
@@ -881,18 +892,15 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     sat.visible = globe.visible && f < 1.7;
 
     // Pune light pillar breathes as it comes alive
-    beamMat.opacity = 0.42 * smooth(0.65, 1.3, f) * (1 - smooth(1.95, 2.35, f)) * (0.75 + 0.25 * Math.sin(el * 2.1));
+    beamMat.opacity = 0.08 * smooth(0.65, 1.3, f) * (1 - smooth(1.95, 2.35, f));
 
-    // Pune terrain + beacon reveal on approach
+    // Pune terrain + tiny pin reveal on approach
     decalMat.opacity = smooth(1.15, 1.85, f);
-    const pulse = 1 + 0.35 * Math.sin(el * 2.4);
-    beacon.material.opacity = (0.35 + 0.4 * Math.abs(Math.sin(el * 1.6))) * (1 - smooth(1.5, 2.0, f) * 0.7);
-    ring.scale.setScalar(pulse);
-    ringMat.opacity = 0.85 * (1.35 - pulse * 0.5);
+    beacon.material.opacity = (0.12 + 0.08 * Math.abs(Math.sin(el * 1.2))) * (1 - smooth(1.5, 2.0, f) * 0.7);
     // arc fades away once we commit to India
     const arcVis = 1 - smooth(1.3, 1.9, f);
-    (arc.material as THREE.MeshBasicMaterial).opacity = 0.75 * arcVis;
-    arcPulse.material.opacity = arcVis;
+    (arc.material as THREE.MeshBasicMaterial).opacity = 0.22 * arcVis;
+    arcPulse.material.opacity = 0.28 * arcVis;
     arcPulse.position.copy(arcCurve.getPoint((el * 0.1) % 1));
     // orbital cloud layer thins out for the Pune close-up
     orbitCloudsMat.opacity = 0.55 * (1 - smooth(1.2, 1.9, f));
@@ -916,6 +924,8 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     globe.visible = cy > 50;
     campus.visible = cy < 96;
     deck.visible = f > 1.5 && f < 3.2;
+    sky.visible = globe.visible;
+    stars.visible = globe.visible;
 
     // doors swing open as we arrive
     const open = easeInOut(smooth(3.04, 3.55, f));

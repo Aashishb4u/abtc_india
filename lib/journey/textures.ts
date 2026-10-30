@@ -356,12 +356,12 @@ export function puneTerrainTexture(scale = 1): THREE.CanvasTexture {
   const cx = S / 2;
   const cy = S / 2;
 
-  // Radial base blending seamlessly into the globe
+  // --- Realistic night-satellite look: earthy terrain base fading into the globe ---
   const baseGrad = ctx.createRadialGradient(cx, cy, 40, cx, cy, S * 0.48);
-  baseGrad.addColorStop(0, "rgba(12, 38, 86, 0.96)");
-  baseGrad.addColorStop(0.55, "rgba(15, 48, 105, 0.88)");
-  baseGrad.addColorStop(0.82, "rgba(18, 56, 120, 0.35)");
-  baseGrad.addColorStop(1, "rgba(18, 56, 120, 0)");
+  baseGrad.addColorStop(0, "rgba(34, 32, 24, 0.96)");
+  baseGrad.addColorStop(0.55, "rgba(30, 30, 22, 0.88)");
+  baseGrad.addColorStop(0.82, "rgba(26, 28, 22, 0.35)");
+  baseGrad.addColorStop(1, "rgba(26, 28, 22, 0)");
   ctx.fillStyle = baseGrad;
   ctx.beginPath();
   ctx.arc(cx, cy, S * 0.49, 0, Math.PI * 2);
@@ -373,91 +373,101 @@ export function puneTerrainTexture(scale = 1): THREE.CanvasTexture {
   ctx.arc(cx, cy, S * 0.46, 0, Math.PI * 2);
   ctx.clip();
 
-  // Topographic contour rings (Sahyadri foothills on the west & south)
-  ctx.strokeStyle = "rgba(7, 153, 232, 0.18)";
-  ctx.lineWidth = 1.5;
-  for (let k = 1; k <= 8; k++) {
+  // Terrain mottling — dark olive/brown patches (Sahyadri hills west & south)
+  const rand = (() => {
+    let s = 42;
+    return () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  })();
+  for (let i = 0; i < 160; i++) {
+    const a = rand() * Math.PI * 2;
+    const d = Math.pow(rand(), 0.6) * S * 0.44;
+    const px = cx + Math.cos(a) * d;
+    const py = cy + Math.sin(a) * d;
+    const r = 14 + rand() * 46;
+    const westBias = px < cx - 60 || py > cy + 120;
+    const g = ctx.createRadialGradient(px, py, 0, px, py, r);
+    const tone = westBias
+      ? `rgba(${38 + (rand() * 14) | 0}, ${44 + (rand() * 12) | 0}, ${26 + (rand() * 8) | 0},`
+      : `rgba(${52 + (rand() * 16) | 0}, ${46 + (rand() * 12) | 0}, ${34 + (rand() * 10) | 0},`;
+    g.addColorStop(0, `${tone} ${0.16 + rand() * 0.2})`);
+    g.addColorStop(1, `${tone} 0)`);
+    ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.ellipse(cx - 170, cy + 80, k * 34, k * 52, -0.35, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.ellipse(cx - 130, cy - 140, k * 28, k * 40, 0.25, 0, Math.PI * 2);
-    ctx.stroke();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fill();
   }
 
-  // Fine urban street grid in central Pune
-  ctx.strokeStyle = "rgba(90, 210, 255, 0.14)";
-  ctx.lineWidth = 1;
-  for (let x = cx - 260; x <= cx + 260; x += 22) {
-    ctx.beginPath();
-    ctx.moveTo(x, cy - 260);
-    ctx.lineTo(x, cy + 260);
-    ctx.stroke();
-  }
-  for (let y = cy - 260; y <= cy + 260; y += 22) {
-    ctx.beginPath();
-    ctx.moveTo(cx - 260, y);
-    ctx.lineTo(cx + 260, y);
-    ctx.stroke();
-  }
-
-  // Mula-Mutha River winding across Pune
+  // Mula-Mutha River — dark, subtly reflective, no neon
   ctx.save();
   ctx.beginPath();
   ctx.moveTo(cx - 380, cy - 110);
   ctx.bezierCurveTo(cx - 180, cy - 40, cx - 80, cy + 45, cx + 10, cy + 10);
   ctx.bezierCurveTo(cx + 120, cy - 30, cx + 220, cy + 35, cx + 390, cy - 15);
-  ctx.strokeStyle = "rgba(7, 153, 232, 0.75)";
-  ctx.lineWidth = 12;
-  ctx.shadowColor = "#0799E8";
-  ctx.shadowBlur = 16;
+  ctx.strokeStyle = "rgba(22, 36, 44, 0.9)";
+  ctx.lineWidth = 11;
   ctx.stroke();
-  ctx.strokeStyle = "#7ce0ff";
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = "rgba(96, 132, 148, 0.4)";
+  ctx.lineWidth = 3;
   ctx.stroke();
 
   // Pavana / Mula northern tributary
   ctx.beginPath();
   ctx.moveTo(cx - 290, cy - 280);
   ctx.quadraticCurveTo(cx - 110, cy - 120, cx + 10, cy + 10);
-  ctx.strokeStyle = "rgba(7, 153, 232, 0.65)";
-  ctx.lineWidth = 7;
+  ctx.strokeStyle = "rgba(24, 38, 46, 0.85)";
+  ctx.lineWidth = 6;
   ctx.stroke();
   ctx.restore();
 
-  // Glowing arterial highways (Mumbai-Pune Expressway, Solapur Rd, Satara Rd, Nagar Rd)
+  // City light field — warm sodium-lamp clusters, dense near the centre
+  for (let i = 0; i < 2600; i++) {
+    const a = rand() * Math.PI * 2;
+    const d = Math.pow(rand(), 1.7) * S * 0.42;
+    const px = cx + Math.cos(a) * d;
+    const py = cy + Math.sin(a) * d * 0.92;
+    const warm = rand();
+    ctx.fillStyle =
+      warm > 0.82
+        ? `rgba(255, 244, 214, ${0.28 + rand() * 0.3})`
+        : `rgba(255, ${190 + (rand() * 40) | 0}, ${140 + (rand() * 40) | 0}, ${0.14 + rand() * 0.28})`;
+    const r = rand() * 1.7 + 0.5;
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Arterial highways — faint warm threads, no neon
   const arteries: [number, number, number, number][] = [
-    [cx - 340, cy - 310, cx, cy], // Mumbai-Pune NH48
-    [cx, cy, cx + 340, cy - 190], // Nagar Road
-    [cx, cy, cx + 350, cy + 160], // Solapur Highway
-    [cx, cy, cx - 40, cy + 360], // Satara Highway
-    [cx, cy, cx - 320, cy + 80], // Paud / Mulshi Road
+    [cx - 340, cy - 310, cx, cy],
+    [cx, cy, cx + 340, cy - 190],
+    [cx, cy, cx + 350, cy + 160],
+    [cx, cy, cx - 40, cy + 360],
+    [cx, cy, cx - 320, cy + 80],
   ];
   ctx.save();
   for (const [x1, y1, x2, y2] of arteries) {
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
-    ctx.strokeStyle = "rgba(255, 217, 125, 0.65)";
-    ctx.lineWidth = 3;
-    ctx.shadowColor = "#ffd97d";
-    ctx.shadowBlur = 10;
+    ctx.strokeStyle = "rgba(210, 180, 140, 0.18)";
+    ctx.lineWidth = 1.4;
     ctx.stroke();
   }
   ctx.restore();
 
-  // Concentric radar / telemetry rings around ABTC Pune Hub
-  for (const r of [55, 115, 185, 265]) {
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = r === 55 ? "rgba(255, 217, 125, 0.75)" : "rgba(90, 210, 255, 0.28)";
-    ctx.lineWidth = r === 55 ? 2.2 : 1.2;
-    ctx.stroke();
-  }
+  // tiny pin at the hub — a location marker, not a radar ring
+  const pin = ctx.createRadialGradient(cx, cy, 0, cx, cy, 14);
+  pin.addColorStop(0, "rgba(255, 236, 210, 0.7)");
+  pin.addColorStop(0.45, "rgba(232, 200, 150, 0.28)");
+  pin.addColorStop(1, "rgba(232, 200, 150, 0)");
+  ctx.fillStyle = pin;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+  ctx.fill();
 
-  // City district labels
-  ctx.font = "700 18px Manrope, Arial, sans-serif";
-  ctx.fillStyle = "rgba(231, 241, 252, 0.85)";
+  // City district labels — quiet map annotations
+  ctx.font = "600 15px Manrope, Arial, sans-serif";
+  ctx.fillStyle = "rgba(236, 232, 220, 0.45)";
   ctx.textAlign = "center";
   ctx.fillText("SHIVAJINAGAR", cx - 85, cy - 75);
   ctx.fillText("KOREGAON PARK", cx + 115, cy - 55);
@@ -465,12 +475,12 @@ export function puneTerrainTexture(scale = 1): THREE.CanvasTexture {
   ctx.fillText("VIMAN NAGAR", cx + 165, cy - 125);
   ctx.fillText("KOTHRUD", cx - 190, cy + 35);
 
-  ctx.font = "800 26px Playfair Display, Georgia, serif";
-  ctx.fillStyle = "#ffd97d";
+  ctx.font = "700 22px Playfair Display, Georgia, serif";
+  ctx.fillStyle = "rgba(236, 230, 214, 0.7)";
   ctx.fillText("PUNE · MAHARASHTRA", cx, cy + 150);
-  ctx.font = "700 15px Manrope, Arial, sans-serif";
-  ctx.fillStyle = "#7ce0ff";
-  ctx.fillText("ABTC & CIDESCO ACADEMIC CLUSTER", cx, cy + 176);
+  ctx.font = "600 13px Manrope, Arial, sans-serif";
+  ctx.fillStyle = "rgba(220, 214, 200, 0.5)";
+  ctx.fillText("ABTC & CIDESCO ACADEMIC CLUSTER", cx, cy + 174);
 
   ctx.restore();
 
@@ -482,21 +492,46 @@ export function puneTerrainTexture(scale = 1): THREE.CanvasTexture {
 
 /** Soft multi-lobe volumetric cloud puff texture for the 3D cloud deck. */
 export function cloudPuffTexture(): THREE.CanvasTexture {
-  const S = 256;
+  const S = 512;
   const { c, ctx } = makeCanvas(S, S);
-  const lobes: [number, number, number, number][] = [
-    [128, 132, 95, 0.55],
-    [88, 138, 72, 0.45],
-    [168, 138, 72, 0.45],
-    [112, 104, 68, 0.48],
-    [148, 108, 64, 0.44],
-  ];
-  for (const [x, y, r, a] of lobes) {
-    const g = ctx.createRadialGradient(x, y - r * 0.15, 2, x, y, r);
+  const rand = (() => {
+    let s = 7;
+    return () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  })();
+
+  // billowing top lobes — many small irregular tufts build a cumulus silhouette
+  const tufts: [number, number, number, number][] = [];
+  for (let i = 0; i < 26; i++) {
+    const t = i / 26;
+    const x = 70 + t * 372 + (rand() - 0.5) * 40;
+    const lift = Math.sin(t * Math.PI); // taller in the middle
+    const y = 300 - lift * (70 + rand() * 60);
+    const r = 34 + rand() * 46 * (0.6 + lift * 0.6);
+    tufts.push([x, y, r, 0.22 + rand() * 0.22]);
+  }
+  // flat, slightly shaded base
+  for (let i = 0; i < 10; i++) {
+    tufts.push([90 + i * 37, 318 + rand() * 10, 44 + rand() * 24, 0.18 + rand() * 0.12]);
+  }
+  for (const [x, y, r, a] of tufts) {
+    const g = ctx.createRadialGradient(x, y - r * 0.22, 2, x, y, r);
     g.addColorStop(0, `rgba(255, 255, 255, ${a})`);
-    g.addColorStop(0.45, `rgba(236, 245, 255, ${a * 0.65})`);
-    g.addColorStop(0.78, `rgba(205, 226, 248, ${a * 0.22})`);
-    g.addColorStop(1, "rgba(205, 226, 248, 0)");
+    g.addColorStop(0.5, `rgba(246, 248, 250, ${a * 0.6})`);
+    g.addColorStop(0.8, `rgba(226, 230, 235, ${a * 0.18})`);
+    g.addColorStop(1, "rgba(226, 230, 235, 0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // grey shading under the base — gives the cloud weight
+  for (let i = 0; i < 9; i++) {
+    const x = 110 + i * 36 + (rand() - 0.5) * 18;
+    const y = 336 + rand() * 8;
+    const r = 36 + rand() * 20;
+    const g = ctx.createRadialGradient(x, y, 2, x, y, r);
+    g.addColorStop(0, "rgba(148, 152, 160, 0.16)");
+    g.addColorStop(1, "rgba(148, 152, 160, 0)");
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -600,39 +635,39 @@ export function abtcSignTexture(): { tex: THREE.CanvasTexture; redraw: () => voi
 
   const redraw = () => {
     const g = ctx.createLinearGradient(0, 0, 2048, 512);
-    g.addColorStop(0, "#030032");
-    g.addColorStop(0.5, "#17145B");
-    g.addColorStop(1, "#030032");
+    g.addColorStop(0, "#15161c");
+    g.addColorStop(0.5, "#23252e");
+    g.addColorStop(1, "#15161c");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 2048, 512);
 
-    // Outer gold & electric blue architectural frames
-    ctx.strokeStyle = "#ffd97d";
-    ctx.lineWidth = 10;
+    // Double gold architectural frame — brass on dark stone
+    ctx.strokeStyle = "#d8b367";
+    ctx.lineWidth = 8;
     ctx.strokeRect(24, 24, 2000, 464);
-    ctx.strokeStyle = "#0799E8";
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = "rgba(216, 179, 103, 0.45)";
+    ctx.lineWidth = 2;
     ctx.strokeRect(42, 42, 1964, 428);
 
     // Left circular CIDESCO emblem motif
     ctx.save();
     ctx.translate(220, 256);
-    ctx.strokeStyle = "#ffd97d";
+    ctx.strokeStyle = "#d8b367";
     ctx.lineWidth = 6;
     ctx.beginPath();
     ctx.arc(0, 0, 110, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.strokeStyle = "#0799E8";
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(216, 179, 103, 0.5)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(0, 0, 92, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#f4efe6";
     ctx.font = "700 44px Playfair Display, Georgia, serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("ABTC", 0, -14);
-    ctx.fillStyle = "#0799E8";
+    ctx.fillStyle = "#d8b367";
     ctx.font = "700 22px Manrope, Arial, sans-serif";
     ctx.fillText("INDIA", 0, 26);
     ctx.restore();
@@ -640,32 +675,32 @@ export function abtcSignTexture(): { tex: THREE.CanvasTexture; redraw: () => voi
     // Right circular CIDESCO 1946 motif
     ctx.save();
     ctx.translate(1828, 256);
-    ctx.strokeStyle = "#ffd97d";
+    ctx.strokeStyle = "#d8b367";
     ctx.lineWidth = 6;
     ctx.beginPath();
     ctx.arc(0, 0, 110, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillStyle = "#ffd97d";
+    ctx.fillStyle = "#d8b367";
     ctx.font = "700 32px Playfair Display, Georgia, serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("CIDESCO", 0, -14);
-    ctx.fillStyle = "#e7f1fc";
+    ctx.fillStyle = "#e9e4d8";
     ctx.font = "600 20px Manrope, Arial, sans-serif";
     ctx.fillText("ZURICH · 1946", 0, 26);
     ctx.restore();
 
     // Center typography
     ctx.textAlign = "center";
-    ctx.fillStyle = "#ffd97d";
+    ctx.fillStyle = "#d8b367";
     ctx.font = "700 30px Manrope, Arial, sans-serif";
     ctx.fillText("INDIAN SECTION OF CIDESCO INTERNATIONAL · REG. NO. FI1552", 1024, 125);
 
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#f7f3ea";
     ctx.font = "700 132px Playfair Display, Georgia, serif";
     ctx.fillText("ABTC INDIA", 1024, 285);
 
-    ctx.fillStyle = "#7ce0ff";
+    ctx.fillStyle = "#cfc7b4";
     ctx.font = "600 36px Manrope, Arial, sans-serif";
     ctx.fillText("ASSOCIATION OF BEAUTY THERAPY & COSMETOLOGY", 1024, 385);
 
@@ -789,4 +824,153 @@ export function mirrorTexture(): THREE.CanvasTexture {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
+}
+
+/** Equirectangular deep-space sky: true-black field, milky-way dust, magnitude-scaled stars. */
+export function spaceSkyTexture(): THREE.CanvasTexture {
+  const W = 2048;
+  const H = 1024;
+  const { c, ctx } = makeCanvas(W, H);
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0, 0, W, H);
+
+  const rand = (() => {
+    let s = 901;
+    return () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  })();
+
+  // milky-way dust band — warm grey, never blue
+  const bandY = (x: number) => H * 0.46 + Math.sin(x * 0.0042) * H * 0.11 + Math.sin(x * 0.011) * H * 0.04;
+  for (let i = 0; i < 1800; i++) {
+    const x = rand() * W;
+    const y = bandY(x) + (rand() - 0.5) * 90;
+    const r = 8 + rand() * 70;
+    const a = 0.012 + rand() * 0.035;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, `rgba(210, 198, 176, ${a})`);
+    g.addColorStop(1, "rgba(210, 198, 176, 0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // dense star field along the band, sparse elsewhere
+  for (let i = 0; i < 9000; i++) {
+    const alongBand = rand() < 0.55;
+    const x = rand() * W;
+    const y = alongBand ? bandY(x) + (rand() - 0.5) * 70 : rand() * H;
+    const mag = Math.pow(rand(), 4.2);
+    const r = 0.35 + mag * 1.6;
+    const warm = rand();
+    const a = 0.18 + mag * 0.82;
+    ctx.fillStyle =
+      warm > 0.88
+        ? `rgba(255, 228, 190, ${a})`
+        : warm < 0.08
+          ? `rgba(210, 220, 235, ${a})`
+          : `rgba(255, 252, 245, ${a})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/** Warm ashlar limestone for the ABTC academy facade. */
+export function limestoneTexture(scale = 1): THREE.CanvasTexture {
+  const S = 512;
+  const { c, ctx } = makeCanvas(S * scale, S * scale);
+  ctx.scale(scale, scale);
+  ctx.fillStyle = "#d5cfc2";
+  ctx.fillRect(0, 0, S, S);
+
+  const rand = (() => {
+    let s = 19;
+    return () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  })();
+
+  // grain
+  for (let i = 0; i < 2800; i++) {
+    const x = rand() * S;
+    const y = rand() * S;
+    const v = 175 + ((rand() * 50) | 0);
+    ctx.fillStyle = `rgba(${v}, ${v - 12}, ${v - 32}, ${0.08 + rand() * 0.18})`;
+    ctx.fillRect(x, y, 1 + rand() * 2.5, 1 + rand() * 2.5);
+  }
+
+  // ashlar courses — large stone blocks, not plank siding
+  const rowH = 86;
+  for (let y = 0; y < S; y += rowH) {
+    ctx.fillStyle = "rgba(110, 102, 90, 0.28)";
+    ctx.fillRect(0, y, S, 2);
+    const offset = ((y / rowH) | 0) % 2 === 0 ? 0 : 90;
+    for (let x = offset; x < S + 180; x += 180) {
+      ctx.fillRect(x, y, 2, rowH);
+    }
+  }
+
+  // weathering streaks
+  for (let i = 0; i < 40; i++) {
+    const x = rand() * S;
+    const g = ctx.createLinearGradient(x, 0, x, S);
+    g.addColorStop(0, "rgba(90, 78, 60, 0)");
+    g.addColorStop(0.4, `rgba(90, 78, 60, ${0.04 + rand() * 0.06})`);
+    g.addColorStop(1, "rgba(90, 78, 60, 0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x, 0, 2 + rand() * 4, S);
+  }
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+/** Distant city-block night facade: dark mass with a grid of warm windows. */
+export function cityNightTexture(seed = 3): THREE.CanvasTexture {
+  const W = 256;
+  const H = 512;
+  const { c, ctx } = makeCanvas(W, H);
+  ctx.fillStyle = "#1a1916";
+  ctx.fillRect(0, 0, W, H);
+
+  const rand = (() => {
+    let s = seed * 97 + 13;
+    return () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  })();
+
+  // slight storey banding
+  for (let y = 0; y < H; y += 28) {
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    ctx.fillRect(0, y, W, 1);
+  }
+
+  const cols = 5;
+  const rows = 16;
+  const cw = W / (cols + 1);
+  const rh = H / (rows + 2);
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      if (rand() < 0.28) continue; // dark window
+      const x = cw * 0.7 + i * cw;
+      const y = rh * 1.2 + j * rh;
+      const on = rand();
+      ctx.fillStyle =
+        on > 0.82
+          ? "rgba(255, 236, 200, 0.85)"
+          : on > 0.45
+            ? "rgba(232, 196, 130, 0.55)"
+            : "rgba(90, 78, 58, 0.7)";
+      ctx.fillRect(x, y, cw * 0.46, rh * 0.48);
+    }
+  }
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
 }

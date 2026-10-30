@@ -15,7 +15,7 @@ import { getLenis } from "@/lib/lenis";
  * progress, which the Three.js scene turns into a smooth camera flight.
  */
 
-const VH_PER_STOP = 165; // scroll length per scene, in vh
+const VH_PER_STOP = 260; // taller track = slower, more cinematic travel
 
 export function JourneyHero() {
   const trackRef = useRef<HTMLElement>(null);
@@ -92,7 +92,7 @@ export function JourneyHero() {
     if (!track) return;
     const top = track.offsetTop + (track.offsetHeight - window.innerHeight) * floatIndexToProgress(i);
     const lenis = getLenis();
-    if (lenis) lenis.scrollTo(top, { duration: 2.2 });
+    if (lenis) lenis.scrollTo(top, { duration: 3.6 });
     else window.scrollTo({ top, behavior: "smooth" });
   };
 
