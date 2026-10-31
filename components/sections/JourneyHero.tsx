@@ -99,7 +99,7 @@ export function JourneyHero() {
   return (
     <section
       ref={trackRef}
-      className="jh-track -mt-6"
+      className="jh-track -mt-20"
       style={{ height: `${JOURNEY_STOPS.length * VH_PER_STOP}vh` }}
       aria-label="Journey from Earth orbit to ABTC India"
     >

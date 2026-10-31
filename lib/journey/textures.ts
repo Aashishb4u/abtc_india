@@ -826,12 +826,16 @@ export function mirrorTexture(): THREE.CanvasTexture {
   return t;
 }
 
-/** Equirectangular deep-space sky: true-black field, milky-way dust, magnitude-scaled stars. */
+/** Equirectangular deep-space sky: cobalt-navy field, soft nebula, fine magnitude-scaled stars. */
 export function spaceSkyTexture(): THREE.CanvasTexture {
-  const W = 2048;
-  const H = 1024;
+  const W = 4096;
+  const H = 2048;
   const { c, ctx } = makeCanvas(W, H);
-  ctx.fillStyle = "#000000";
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#01030c");
+  bg.addColorStop(0.5, "#020717");
+  bg.addColorStop(1, "#01030c");
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
   const rand = (() => {
@@ -839,44 +843,45 @@ export function spaceSkyTexture(): THREE.CanvasTexture {
     return () => ((s = (s * 16807) % 2147483647) / 2147483647);
   })();
 
-  // milky-way dust band — warm grey, never blue
-  const bandY = (x: number) => H * 0.46 + Math.sin(x * 0.0042) * H * 0.11 + Math.sin(x * 0.011) * H * 0.04;
-  for (let i = 0; i < 1800; i++) {
-    const x = rand() * W;
-    const y = bandY(x) + (rand() - 0.5) * 90;
-    const r = 8 + rand() * 70;
-    const a = 0.012 + rand() * 0.035;
+  // wide, very soft nebula haze — cobalt, never grey, never banded
+  const haze = (x: number, y: number, r: number, rgb: string, a: number) => {
     const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, `rgba(210, 198, 176, ${a})`);
-    g.addColorStop(1, "rgba(210, 198, 176, 0)");
+    g.addColorStop(0, `rgba(${rgb}, ${a})`);
+    g.addColorStop(0.5, `rgba(${rgb}, ${a * 0.4})`);
+    g.addColorStop(1, `rgba(${rgb}, 0)`);
     ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  };
+  for (let i = 0; i < 22; i++) haze(rand() * W, rand() * H, 260 + rand() * 520, "8, 32, 110", 0.05 + rand() * 0.06);
+  for (let i = 0; i < 9; i++) haze(rand() * W, rand() * H, 200 + rand() * 360, "30, 76, 190", 0.025 + rand() * 0.035);
+  // faint violet hint so the blue has depth
+  for (let i = 0; i < 4; i++) haze(rand() * W, rand() * H, 300 + rand() * 300, "50, 30, 120", 0.025);
 
-  // dense star field along the band, sparse elsewhere
-  for (let i = 0; i < 9000; i++) {
-    const alongBand = rand() < 0.55;
+  // fine star field: lots of tiny stars, a handful of brighter ones with a soft halo
+  for (let i = 0; i < 7500; i++) {
     const x = rand() * W;
-    const y = alongBand ? bandY(x) + (rand() - 0.5) * 70 : rand() * H;
-    const mag = Math.pow(rand(), 4.2);
-    const r = 0.35 + mag * 1.6;
-    const warm = rand();
-    const a = 0.18 + mag * 0.82;
+    const y = rand() * H;
+    const mag = Math.pow(rand(), 5);
+    const r = 0.3 + mag * 1.05;
+    const t = rand();
+    const a = 0.2 + mag * 0.8;
     ctx.fillStyle =
-      warm > 0.88
-        ? `rgba(255, 228, 190, ${a})`
-        : warm < 0.08
-          ? `rgba(210, 220, 235, ${a})`
-          : `rgba(255, 252, 245, ${a})`;
+      t > 0.92 ? `rgba(255, 232, 205, ${a})` : t < 0.35 ? `rgba(180, 208, 255, ${a})` : `rgba(240, 246, 255, ${a})`;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
+    if (mag > 0.55) {
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r * 5);
+      g.addColorStop(0, `rgba(200, 224, 255, ${0.22 * mag})`);
+      g.addColorStop(1, "rgba(200, 224, 255, 0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(x - r * 5, y - r * 5, r * 10, r * 10);
+    }
   }
 
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
   return tex;
 }
 

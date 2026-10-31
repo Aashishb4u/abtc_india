@@ -56,8 +56,8 @@ export const JOURNEY_STOPS: JourneyStop[] = [
       { label: "Founded in Zurich", value: "1946" },
     ],
     side: "left",
-    cam: [0, 150, 124],
-    look: [0, 140, -6],
+    cam: [0, 150, 114],
+    look: [-8, 155, -6],
     fov: 44,
   },
   {
@@ -128,8 +128,8 @@ export const JOURNEY_STOPS: JourneyStop[] = [
       { label: "Recognition", value: "Global" },
     ],
     side: "center",
-    cam: [0.0, 1.72, -1.6],
-    look: [0.0, 1.38, -9.2],
-    fov: 54,
+    cam: [0.0, 1.62, 1.7],
+    look: [0.0, 1.48, -9.6],
+    fov: 60,
   },
 ];

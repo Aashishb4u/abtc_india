@@ -62,16 +62,20 @@ export function Header() {
           </div>
         </motion.div>
 
-        {/* Navigation bar */}
-        <div className="border-b border-white/10 bg-midnight/85 text-white shadow-lg backdrop-blur-xl">
-          <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+        {/* Navigation bar — navy glass over the scene */}
+        <div className="nav-glass relative text-white">
+          <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+            <Link href="/" aria-label="ABTC India home" className="flex items-center gap-2 md:hidden">
+              <img src={IMAGES.logo} alt="" className="h-9 w-auto object-contain" />
+              <span className="font-display text-sm font-bold tracking-wide">ABTC INDIA</span>
+            </Link>
+
             <button
               onClick={() => setOpen(true)}
               className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 transition-all hover:bg-white/10 active:scale-95 md:hidden"
               aria-label="Open navigation"
             >
               <Icon name="menu" className="text-xl text-electric-blue" />
-              {/* <span className="text-xs font-bold uppercase tracking-wider">Navigation</span> */}
             </button>
 
             {/* Desktop: compact brand appears once the institutional bar collapses */}
@@ -86,7 +90,7 @@ export function Header() {
             </motion.div>
 
             <nav
-              className="hidden items-center gap-0.5 text-xs font-semibold uppercase tracking-wider md:flex"
+              className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-0.5 text-[12px] font-semibold uppercase tracking-[0.14em] md:flex"
               onMouseLeave={() => setHover(null)}
             >
               {NAV.map((item) => {
@@ -119,7 +123,7 @@ export function Header() {
                       {active && (
                         <motion.span
                           layoutId="nav-active"
-                          className="absolute inset-x-3.5 -bottom-0.5 h-0.5 rounded-full bg-electric-blue shadow-glow"
+                          className="absolute inset-x-3.5 -bottom-1 h-[2px] rounded-full bg-white"
                         />
                       )}
                     </Link>
@@ -132,7 +136,7 @@ export function Header() {
                           transition={{ duration: 0.18 }}
                           className="absolute left-0 top-full z-50 pt-2"
                         >
-                          <div className="min-w-[13rem] rounded-xl border border-white/10 bg-midnight p-1.5 shadow-glass-dark">
+                          <div className="nav-glass min-w-[13rem] rounded-xl p-1.5 shadow-glass-dark">
                             {kids.map((child) => (
                               <Link
                                 key={child.href}
@@ -156,7 +160,7 @@ export function Header() {
               })}
             </nav>
 
-            <Magnetic strength={0.25}>
+            <Magnetic strength={0.25} className="hidden md:block">
               <Link
                 href="/education"
                 className="btn-shimmer inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-electric-blue to-electric-dark px-3.5 py-2 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm transition-shadow hover:shadow-glow"
