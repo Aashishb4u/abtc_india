@@ -10,8 +10,11 @@ import {
   paverTexture,
   abtcSignTexture,
   sanctuarySealTexture,
-  charterTexture,
-  mirrorTexture,
+  portraitArtTexture,
+  conferenceScreenTexture,
+  officeWallTextTexture,
+  receptionMarbleTexture,
+  loungeRugTexture,
   spaceSkyTexture,
   limestoneTexture,
   cityNightTexture,
@@ -21,7 +24,7 @@ import {
  * Scroll-driven cinematic journey:
  *   00 Earth in orbit  ->  01 India  ->  02 Pune close-up
  *   ->  03 dive through the clouds to the ABTC campus at night
- *   ->  04 inside the Master Aesthetic Sanctuary.
+ *   ->  04 inside the ABTC clinical training studio.
  *
  * World layout
  * ------------
@@ -44,7 +47,7 @@ const COL = {
   gold: 0xffd97d,
   cream: 0xf4efe6,
   ice: 0xe7f1fc,
-  wallIn: 0xeef2f8,
+  wallIn: 0xffd8c8,
 };
 
 export interface JourneySceneOptions {
@@ -57,6 +60,7 @@ export interface JourneyScene {
   setProgress: (p: number) => void;
   /** -1..1 pointer position for subtle parallax. */
   setPointer: (x: number, y: number) => void;
+  setActive: (active: boolean) => void;
   resize: () => void;
   dispose: () => void;
   stops: JourneyStop[];
@@ -119,10 +123,10 @@ function alignedBasis(f: THREE.Vector3) {
 
 export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneySceneOptions = {}): JourneyScene {
   const lowPower = !!opts.lowPower;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !lowPower, powerPreference: "high-performance" });
-  // Ultra-crisp output: supersample up to 3x on capable machines ("4K mode")
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !lowPower, powerPreference: lowPower ? "low-power" : "high-performance" });
+  // Keep the cinematic scene crisp while avoiding oversized mobile framebuffers.
   const dpr = window.devicePixelRatio || 1;
-  renderer.setPixelRatio(lowPower ? Math.min(dpr, 1.5) : Math.min(Math.max(dpr, 2), 3));
+  renderer.setPixelRatio(Math.min(dpr, lowPower ? 1.25 : 1.75));
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -363,9 +367,9 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     puffs.push({ s, bx: x, seed: Math.random() * 100 });
   }
 
-  // Camera-attached whiteout quad — peaks mid-descent to hide the world swap
+  // Camera-attached atmospheric cloud mist — subtle softness during descent, never a solid whiteout
   const whiteMat = new THREE.MeshBasicMaterial({
-    color: 0xf0ebe3,
+    color: 0x98b8d8,
     transparent: true,
     opacity: 0,
     depthTest: false,
@@ -399,8 +403,8 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     facadeUpper: new THREE.MeshStandardMaterial({ map: stoneUpper, color: 0xefeae0, roughness: 0.88, metalness: 0.02 }),
     facadeDark: std(0x3a342c, 0.82),
     bronze: std(0x6a5a3e, 0.45, 0.55),
-    navy: std(0x2c2a26, 0.55),
-    graphite: std(0x2e2c28, 0.65, 0.25),
+    navy: std(COL.navy, 0.55),
+    graphite: std(0x11132f, 0.65, 0.25),
     gold: std(0xb89a5a, 0.4, 0.55),
     goldGlow: new THREE.MeshStandardMaterial({ color: 0xc4a56a, emissive: 0x8a7040, emissiveIntensity: 0.55 }),
     windowLit: new THREE.MeshStandardMaterial({
@@ -428,7 +432,7 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
   // --- Building shell (interior lives inside: x -11..11, z -10.5..6, h 4.2) ---
   const IH = 4.2;
   const bld = group(campus);
-  const wallIn = std(COL.wallIn, 0.9);
+  const wallIn = std(COL.wallIn, 0.88);
   // front wall with 3.0m door opening (x -1.5..1.5)
   box(bld, [9.5, IH, 0.35], mats.facade, [-6.25, 0, 6]);
   box(bld, [9.5, IH, 0.35], mats.facade, [6.25, 0, 6]);
@@ -596,57 +600,506 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     box(campus, [w, h, d], Math.random() > 0.5 ? cityMatA : cityMatB, [cx, 0, cz]);
   }
 
-  // ===== Interior: Master Aesthetic Sanctuary =====
+  // ===== Interior: Master Aesthetic Sanctuary (Luxury Office Lobby) =====
   const hall = group(campus);
+  const hallFill = new THREE.HemisphereLight(0xfff3e5, 0x5a483a, 0.45);
+  hall.add(hallFill);
 
+  // Polished ivory marble flooring with realistic gloss and reflection
   const marble = marbleFloorTexture();
   marble.repeat.set(9, 7);
-  const hallFloor = new THREE.Mesh(new THREE.PlaneGeometry(21.6, 16.3), std(0xffffff, 0.25, 0, { map: marble, envMapIntensity: 0.4 }));
+  const hallFloor = new THREE.Mesh(
+    new THREE.PlaneGeometry(21.6, 16.3),
+    new THREE.MeshStandardMaterial({
+      map: marble,
+      roughness: 0.22,
+      metalness: 0.08,
+      envMapIntensity: 0.5,
+    })
+  );
   hallFloor.rotation.x = -Math.PI / 2;
   hallFloor.position.set(0, 0.02, -2.3);
   hall.add(hallFloor);
 
-  // inner wall skins (so the inside is bright even though the shell is shared)
+  // Inner wall skins
   box(hall, [0.1, IH, 16.4], wallIn, [-10.78, 0, -2.3]);
   box(hall, [0.1, IH, 16.4], wallIn, [10.78, 0, -2.3]);
-  // navy wainscot
-  box(hall, [0.12, 1.0, 16.4], mats.navy, [-10.76, 0, -2.3]);
-  box(hall, [0.12, 1.0, 16.4], mats.navy, [10.76, 0, -2.3]);
-  box(hall, [21.5, 1.0, 0.12], mats.navy, [0, 0, -10.28]);
 
-  // ceiling + gold cove + downlights
-  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(21.6, 16.4), std(0xf6f8fb, 0.95));
+  // Warm skirting
+  const warmSkirting = std(0xd3b4a0, 0.88);
+  box(hall, [0.12, 0.42, 16.4], warmSkirting, [-10.76, 0, -2.3]);
+  box(hall, [0.12, 0.42, 16.4], warmSkirting, [10.76, 0, -2.3]);
+  box(hall, [21.5, 0.42, 0.12], warmSkirting, [0, 0, -10.28]);
+
+  // Recessed coffered ceiling with warm gold perimeter cove lighting
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(21.6, 16.4), new THREE.MeshBasicMaterial({ color: 0xfff3e7 }));
   ceil.rotation.x = Math.PI / 2;
   ceil.position.set(0, IH - 0.02, -2.3);
   hall.add(ceil);
-  box(hall, [20.8, 0.06, 0.06], mats.goldGlow, [0, IH - 0.2, -10.1]);
-  box(hall, [20.8, 0.06, 0.06], mats.goldGlow, [0, IH - 0.2, 5.6]);
-  box(hall, [0.06, 0.06, 15.6], mats.goldGlow, [-10.5, IH - 0.2, -2.3]);
-  box(hall, [0.06, 0.06, 15.6], mats.goldGlow, [10.5, IH - 0.2, -2.3]);
-  const dlGeo = new THREE.CircleGeometry(0.14, 20);
-  const dlMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2d8, emissiveIntensity: 2.6 });
+
+  // Perimeter cove LED glow strip
+  box(hall, [20.8, 0.08, 0.08], mats.goldGlow, [0, IH - 0.18, -10.1]);
+  box(hall, [20.8, 0.08, 0.08], mats.goldGlow, [0, IH - 0.18, 5.6]);
+  box(hall, [0.08, 0.08, 15.6], mats.goldGlow, [-10.5, IH - 0.18, -2.3]);
+  box(hall, [0.08, 0.08, 15.6], mats.goldGlow, [10.5, IH - 0.18, -2.3]);
+
+  // Recessed architectural spot lights
+  const dlGeo = new THREE.CircleGeometry(0.12, 16);
+  const dlMat = new THREE.MeshStandardMaterial({ color: 0xfffaee, emissive: 0xffe9cc, emissiveIntensity: 1.4 });
   const dlGlowMat = new THREE.SpriteMaterial({
     map: glowSprite("255,236,200"),
     transparent: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
-    opacity: 0.4,
+    opacity: 0.18,
   });
-  for (const x of [-6, 0, 6]) {
-    for (const z of [-8, -4.5, -1, 2.5]) {
+  for (const x of [-7.5, -4.5, -1.5, 1.5, 4.5, 7.5]) {
+    for (const z of [-8.5, -5.5, -2.5, 0.5, 3.5]) {
       const d = new THREE.Mesh(dlGeo, dlMat);
       d.rotation.x = Math.PI / 2;
       d.position.set(x, IH - 0.03, z);
       hall.add(d);
       const g = new THREE.Sprite(dlGlowMat);
       g.position.set(x, IH - 0.12, z);
-      g.scale.set(1.1, 1.1, 1);
+      g.scale.set(0.65, 0.65, 1);
       hall.add(g);
     }
   }
 
-  // drifting gold dust in the hall air
-  const moteCount = lowPower ? 70 : 170;
+  // Floating Grand Circular Halo Ring Chandelier in the center
+  const haloGroup = group(hall, [0, 0, -1.2]);
+  for (let i = 0; i < 4; i++) {
+    const ang = (i / 4) * Math.PI * 2 + Math.PI / 4;
+    const cx = Math.cos(ang) * 2.1;
+    const cz = Math.sin(ang) * 2.1;
+    cyl(haloGroup, 0.008, 0.008, 0.45, mats.gold, [cx, 3.95, cz], 6);
+  }
+  const haloRingOuter = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.085, 12, 64), mats.gold);
+  haloRingOuter.rotation.x = Math.PI / 2;
+  haloRingOuter.position.y = 3.72;
+  haloGroup.add(haloRingOuter);
+  const haloRingInner = new THREE.Mesh(
+    new THREE.TorusGeometry(1.94, 0.045, 10, 64),
+    new THREE.MeshStandardMaterial({
+      color: 0xffeed4,
+      emissive: 0xffe0a8,
+      emissiveIntensity: 1.8,
+      roughness: 0.2,
+    })
+  );
+  haloRingInner.rotation.x = Math.PI / 2;
+  haloRingInner.position.y = 3.72;
+  haloGroup.add(haloRingInner);
+  const haloLight = new THREE.PointLight(0xffe8c8, 5.8, 14, 1.6);
+  haloLight.position.set(0, 3.45, 0);
+  haloGroup.add(haloLight);
+
+  // Linear architectural pendant light bar above right workstations
+  const linearLight = group(hall, [7.2, 3.65, -2.6]);
+  box(linearLight, [3.2, 0.08, 0.08], mats.gold, [0, 0, 0]);
+  box(linearLight, [3.1, 0.02, 0.06], mats.goldGlow, [0, -0.04, 0]);
+  cyl(linearLight, 0.006, 0.006, 0.5, mats.gold, [-1.2, 0.25, 0], 6);
+  cyl(linearLight, 0.006, 0.006, 0.5, mats.gold, [1.2, 0.25, 0], 6);
+
+  // 1. Back Wall: Navy Blue Central Feature Wall + Gold Trim
+  const seal = sanctuarySealTexture();
+  const sealMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(7.2, 3.8),
+    new THREE.MeshStandardMaterial({
+      map: seal.tex,
+      emissive: 0xffffff,
+      emissiveMap: seal.tex,
+      emissiveIntensity: 0.52,
+      roughness: 0.5,
+    })
+  );
+  sealMesh.position.set(0, 2.3, -10.22);
+  hall.add(sealMesh);
+  box(hall, [7.32, 3.92, 0.06], mats.navy, [0, 0.36, -10.28]);
+  box(hall, [7.34, 0.07, 0.08], mats.gold, [0, 0.36, -10.2]);
+  box(hall, [7.34, 0.07, 0.08], mats.gold, [0, 4.22, -10.2]);
+  box(hall, [0.07, 3.92, 0.08], mats.gold, [-3.64, 0.36, -10.2]);
+  box(hall, [0.07, 3.92, 0.08], mats.gold, [3.64, 0.36, -10.2]);
+
+  // Fluting: Vertical Warm Golden Oak Slats flanking the navy wall
+  const oakSlat = std(0x916b47, 0.72);
+  const slatSpacing = 0.16;
+  for (let x = -3.8; x >= -10.4; x -= slatSpacing) {
+    box(hall, [0.075, 3.82, 0.07], oakSlat, [x, 0.4, -10.28]);
+  }
+  for (let x = 3.8; x <= 10.4; x += slatSpacing) {
+    box(hall, [0.075, 3.82, 0.07], oakSlat, [x, 0.4, -10.28]);
+  }
+
+  // Framed Aesthetic Beauty Portraits flanking the central wall
+  const portraitL = portraitArtTexture(1);
+  const portraitR = portraitArtTexture(2);
+  const portraitMatL = new THREE.MeshStandardMaterial({ map: portraitL, roughness: 0.5, emissive: 0xffffff, emissiveMap: portraitL, emissiveIntensity: 0.25 });
+  const portraitMatR = new THREE.MeshStandardMaterial({ map: portraitR, roughness: 0.5, emissive: 0xffffff, emissiveMap: portraitR, emissiveIntensity: 0.25 });
+
+  const portGroupL = group(hall, [-6.6, 2.45, -10.2]);
+  const pMeshL = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 1.72), portraitMatL);
+  pMeshL.position.z = 0.04;
+  portGroupL.add(pMeshL);
+  box(portGroupL, [1.38, 1.8, 0.04], mats.gold, [0, -0.9, 0]);
+  box(portGroupL, [1.44, 1.86, 0.02], mats.goldGlow, [0, -0.93, -0.02]);
+  box(hall, [1.8, 0.85, 0.45], std(0x6e4e34, 0.7), [-6.6, 0.02, -10.05]);
+  box(hall, [1.84, 0.04, 0.48], mats.gold, [-6.6, 0.87, -10.05]);
+
+  const portGroupR = group(hall, [9.4, 2.45, -10.2]);
+  const pMeshR = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 1.72), portraitMatR);
+  pMeshR.position.z = 0.04;
+  portGroupR.add(pMeshR);
+  box(portGroupR, [1.38, 1.8, 0.04], mats.gold, [0, -0.9, 0]);
+  box(portGroupR, [1.44, 1.86, 0.02], mats.goldGlow, [0, -0.93, -0.02]);
+  box(hall, [1.8, 0.85, 0.45], std(0x6e4e34, 0.7), [9.4, 0.02, -10.05]);
+  box(hall, [1.84, 0.04, 0.48], mats.gold, [9.4, 0.87, -10.05]);
+
+  // 2. Central Long Luxury Reception Desk
+  const desk = group(hall, [0, 0, -4.3]);
+  const marbleDeskTex = receptionMarbleTexture();
+  const marbleDeskMat = new THREE.MeshStandardMaterial({
+    map: marbleDeskTex,
+    roughness: 0.24,
+    metalness: 0.06,
+  });
+
+  const deskWidth = 6.4;
+  const deskHeight = 1.15;
+  const deskDepth = 1.1;
+
+  const frontPanel = new THREE.Mesh(new THREE.BoxGeometry(deskWidth, deskHeight - 0.08, 0.08), marbleDeskMat);
+  frontPanel.position.set(0, deskHeight / 2 + 0.04, deskDepth / 2);
+  desk.add(frontPanel);
+
+  box(desk, [deskWidth - 0.1, 0.035, 0.04], mats.goldGlow, [0, deskHeight - 0.02, deskDepth / 2 + 0.03]);
+  box(desk, [deskWidth - 0.2, 0.06, 0.06], mats.goldGlow, [0, 0.02, deskDepth / 2 - 0.06]);
+  box(desk, [0.1, deskHeight, deskDepth + 0.04], mats.gold, [-deskWidth / 2 - 0.04, 0, 0]);
+  box(desk, [0.1, deskHeight, deskDepth + 0.04], mats.gold, [deskWidth / 2 + 0.04, 0, 0]);
+
+  const topStoneMat = std(0xfbfbf9, 0.2, 0.05);
+  box(desk, [deskWidth + 0.2, 0.08, deskDepth + 0.12], topStoneMat, [0, deskHeight, 0]);
+  box(desk, [deskWidth - 0.2, deskHeight - 0.1, 0.08], std(0x5a4230, 0.75), [0, 0, -deskDepth / 2]);
+  box(desk, [deskWidth - 0.2, 0.06, deskDepth - 0.2], std(0x6e523c, 0.75), [0, 0.74, 0]);
+
+  // Two sleek silver Apple iMac computers on the reception counter
+  const imacMat = std(0xd8dce4, 0.25, 0.75);
+  const imacScreenMat = std(0x181a20, 0.12, 0.2);
+  const makeImac = (xPos: number) => {
+    const imac = group(desk, [xPos, deskHeight + 0.08, 0.12]);
+    box(imac, [0.22, 0.015, 0.18], imacMat, [0, 0, 0]);
+    const neck = box(imac, [0.065, 0.24, 0.02], imacMat, [0, 0.01, -0.02]);
+    neck.rotation.x = -0.15;
+    const monitor = group(imac, [0, 0.28, 0]);
+    monitor.rotation.x = -0.06;
+    box(monitor, [0.65, 0.42, 0.025], imacMat, [0, 0, 0]);
+    box(monitor, [0.61, 0.38, 0.005], imacScreenMat, [0, 0.015, 0.013]);
+    box(imac, [0.32, 0.012, 0.12], imacMat, [0, 0, 0.24]);
+    box(imac, [0.06, 0.018, 0.09], imacMat, [0.24, 0, 0.24]);
+  };
+  makeImac(-1.5);
+  makeImac(1.5);
+
+  // Floral vase on right of reception desk
+  const vaseGroup = group(desk, [2.35, deskHeight + 0.08, 0.08]);
+  cyl(vaseGroup, 0.14, 0.11, 0.36, std(0xffffff, 0.18, 0.1), [0, 0, 0], 16);
+  const flowerWhite = std(0xfffbf2, 0.6);
+  const stemGreen = std(0x526b42, 0.85);
+  for (let i = 0; i < 9; i++) {
+    const ang = (i / 9) * Math.PI * 2;
+    const rad = 0.08 + (i % 3) * 0.05;
+    const flX = Math.cos(ang) * rad;
+    const flZ = Math.sin(ang) * rad;
+    const flH = 0.36 + (i % 3) * 0.09;
+    cyl(vaseGroup, 0.01, 0.01, flH, stemGreen, [flX, 0.15, flZ], 6);
+    const flower = new THREE.Mesh(new THREE.DodecahedronGeometry(0.075, 0), flowerWhite);
+    flower.position.set(flX * 1.3, flH + 0.16, flZ * 1.3);
+    vaseGroup.add(flower);
+  }
+
+  // Reception chairs behind desk
+  const chairMat = std(0x1a2138, 0.5, 0.2);
+  const chromeMat = std(0xcccccc, 0.15, 0.85);
+  const makeReceptionChair = (xPos: number) => {
+    const chair = group(desk, [xPos, 0, -0.65]);
+    cyl(chair, 0.26, 0.26, 0.06, chromeMat, [0, 0.08, 0], 12);
+    cyl(chair, 0.035, 0.035, 0.38, chromeMat, [0, 0.12, 0], 8);
+    box(chair, [0.54, 0.1, 0.52], chairMat, [0, 0.48, 0]);
+    box(chair, [0.52, 0.58, 0.08], chairMat, [0, 0.56, -0.22]);
+  };
+  makeReceptionChair(-1.5);
+  makeReceptionChair(1.5);
+
+  // Tall planters flanking reception desk
+  const planterMat = std(0xfbf8f4, 0.3, 0.05);
+  const leafGreenA = std(0x426338, 0.85);
+  const leafGreenB = std(0x5a7e4b, 0.85);
+  const makeReceptionPlant = (x: number, z: number, scale = 1.0) => {
+    const g = group(hall, [x, 0, z]);
+    cyl(g, 0.38 * scale, 0.3 * scale, 0.82 * scale, planterMat, [0, 0, 0], 18);
+    cyl(g, 0.32 * scale, 0.32 * scale, 0.08 * scale, mats.gold, [0, 0.78 * scale, 0], 18);
+    cyl(g, 0.34 * scale, 0.34 * scale, 0.04 * scale, mats.trunk, [0, 0.79 * scale, 0], 12);
+    for (let i = 0; i < 8; i++) {
+      const ang = (i / 8) * Math.PI * 2;
+      const leaf = new THREE.Mesh(new THREE.IcosahedronGeometry(0.36 * scale, 0), i % 2 === 0 ? leafGreenA : leafGreenB);
+      leaf.scale.set(0.65, 1.4, 0.22);
+      leaf.position.set(Math.cos(ang) * 0.26 * scale, (1.1 + (i % 3) * 0.14) * scale, Math.sin(ang) * 0.26 * scale);
+      leaf.rotation.z = Math.cos(ang) * 0.45;
+      leaf.rotation.y = ang;
+      g.add(leaf);
+    }
+  };
+  makeReceptionPlant(-3.7, -4.3, 1.05);
+  makeReceptionPlant(3.7, -4.3, 1.05);
+
+  // 3. Foreground Waiting Lounge
+  const loungeArea = group(hall, [0, 0, 0]);
+
+  // Large plush oatmeal taupe textured rug
+  const rugTex = loungeRugTexture();
+  rugTex.repeat.set(2, 2);
+  const rugMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(6.2, 4.4),
+    new THREE.MeshStandardMaterial({
+      map: rugTex,
+      roughness: 0.88,
+      metalness: 0.02,
+    })
+  );
+  rugMesh.rotation.x = -Math.PI / 2;
+  rugMesh.position.set(2.4, 0.032, 1.6);
+  loungeArea.add(rugMesh);
+
+  // Curved Luxury Sofa
+  const sofaGroup = group(loungeArea, [4.0, 0, 1.6], -0.2);
+  const sofaFabric = std(0xf7f3ea, 0.72);
+  const pillowPinkA = std(0xd48f93, 0.65);
+  const pillowPinkB = std(0xc77f83, 0.65);
+
+  box(sofaGroup, [1.4, 0.46, 0.95], sofaFabric, [-0.65, 0, 0]);
+  box(sofaGroup, [1.4, 0.46, 0.95], sofaFabric, [0.65, 0, -0.06]);
+  box(sofaGroup, [1.4, 0.44, 0.28], sofaFabric, [-0.65, 0.44, -0.34]);
+  box(sofaGroup, [1.4, 0.44, 0.28], sofaFabric, [0.65, 0.44, -0.4]);
+  box(sofaGroup, [0.24, 0.32, 0.95], sofaFabric, [-1.42, 0.36, 0]);
+  box(sofaGroup, [0.24, 0.32, 0.95], sofaFabric, [1.42, 0.36, -0.06]);
+  box(sofaGroup, [2.9, 0.05, 0.96], mats.gold, [0, 0.02, -0.03]);
+
+  const makePillow = (parent: THREE.Object3D, pos: V3, rotY: number, mat: THREE.Material) => {
+    const pil = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.36, 0.16), mat);
+    pil.position.set(...pos);
+    pil.rotation.y = rotY;
+    pil.rotation.x = 0.18;
+    parent.add(pil);
+  };
+  makePillow(sofaGroup, [-1.0, 0.62, -0.15], 0.2, pillowPinkA);
+  makePillow(sofaGroup, [0.0, 0.62, -0.18], -0.05, pillowPinkB);
+  makePillow(sofaGroup, [0.95, 0.62, -0.22], -0.25, pillowPinkA);
+
+  // Rounded Modern Lounge Armchair
+  const armChairGroup = group(loungeArea, [1.15, 0, 1.25], 0.65);
+  cyl(armChairGroup, 0.46, 0.48, 0.05, mats.gold, [0, 0.02, 0], 18);
+  const seatCush = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.44, 18), sofaFabric);
+  seatCush.position.set(0, 0.25, 0);
+  armChairGroup.add(seatCush);
+  const backGeo = new THREE.CylinderGeometry(0.52, 0.52, 0.44, 18, 1, false, -Math.PI * 0.75, Math.PI * 1.5);
+  const backMesh = new THREE.Mesh(backGeo, sofaFabric);
+  backMesh.position.set(0, 0.54, 0);
+  armChairGroup.add(backMesh);
+  makePillow(armChairGroup, [0, 0.58, -0.18], 0, pillowPinkA);
+
+  // Circular Marble & Gold Coffee Table
+  const tableGroup = group(loungeArea, [2.35, 0, 1.55]);
+  const tableRadius = 0.78;
+  const tableHeight = 0.44;
+
+  const tableRingMat = mats.gold;
+  for (const y of [0.03, tableHeight - 0.04]) {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(tableRadius * 0.95, 0.025, 8, 36), tableRingMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = y;
+    tableGroup.add(ring);
+  }
+  for (let i = 0; i < 4; i++) {
+    const ang = (i / 4) * Math.PI * 2;
+    cyl(tableGroup, 0.02, 0.02, tableHeight - 0.06, tableRingMat, [Math.cos(ang) * tableRadius * 0.92, 0.04, Math.sin(ang) * tableRadius * 0.92], 8);
+  }
+  const tableTop = new THREE.Mesh(
+    new THREE.CylinderGeometry(tableRadius, tableRadius, 0.04, 32),
+    new THREE.MeshStandardMaterial({
+      map: marbleDeskTex,
+      roughness: 0.2,
+      metalness: 0.05,
+    })
+  );
+  tableTop.position.y = tableHeight;
+  tableGroup.add(tableTop);
+
+  // Decor on Coffee Table
+  cyl(tableGroup, 0.09, 0.07, 0.22, mats.glass, [-0.18, tableHeight + 0.02, -0.08], 14);
+  for (let i = 0; i < 4; i++) {
+    cyl(tableGroup, 0.008, 0.008, 0.28, leafGreenA, [-0.18 + (i % 2) * 0.03, tableHeight + 0.14, -0.08 + (i > 1 ? 0.03 : 0)], 6);
+  }
+  const orb = new THREE.Mesh(new THREE.SphereGeometry(0.085, 14, 12), mats.gold);
+  orb.position.set(0.18, tableHeight + 0.09, -0.12);
+  tableGroup.add(orb);
+  box(tableGroup, [0.24, 0.035, 0.32], std(0x2a2a38, 0.6), [0.12, tableHeight + 0.02, 0.16], 0.2);
+  box(tableGroup, [0.22, 0.03, 0.3], std(0xf5eedc, 0.6), [0.13, tableHeight + 0.055, 0.16], 0.1);
+
+  // Immediate Foreground Left Planter
+  makeReceptionPlant(-2.4, 3.2, 1.15);
+
+  // 4. Left Wing: Floor-to-Ceiling Glass Conference / Boardroom
+  const confRoom = group(hall, [0, 0, 0]);
+  const mullionMat = mats.graphite;
+
+  const confWallZMin = -8.8;
+  const confWallZMax = 3.2;
+  const confWallLen = confWallZMax - confWallZMin;
+  const confWallZCenter = (confWallZMin + confWallZMax) / 2;
+
+  const glassPartition = new THREE.Mesh(
+    new THREE.PlaneGeometry(confWallLen - 2.0, IH - 0.2),
+    mats.glass
+  );
+  glassPartition.rotation.y = Math.PI / 2;
+  glassPartition.position.set(-5.4, IH / 2, confWallZCenter - 1.0);
+  confRoom.add(glassPartition);
+
+  box(confRoom, [0.08, 0.08, confWallLen], mullionMat, [-5.4, 0.02, confWallZCenter]);
+  box(confRoom, [0.08, 0.08, confWallLen], mullionMat, [-5.4, IH - 0.08, confWallZCenter]);
+  box(confRoom, [0.08, 0.06, confWallLen], mullionMat, [-5.4, 2.3, confWallZCenter]);
+
+  for (let z = confWallZMin; z <= confWallZMax; z += 1.8) {
+    box(confRoom, [0.08, IH, 0.08], mullionMat, [-5.4, 0, z]);
+  }
+
+  // Large Executive Boardroom Table
+  const confTableGroup = group(confRoom, [-8.0, 0, -3.2]);
+  const tableWoodMat = std(0xebe5d8, 0.35, 0.05);
+  box(confTableGroup, [1.4, 0.08, 4.4], tableWoodMat, [0, 0.74, 0]);
+  box(confTableGroup, [1.42, 0.02, 4.42], mats.gold, [0, 0.73, 0]);
+  box(confTableGroup, [1.1, 0.72, 0.12], mullionMat, [0, 0.02, -1.4]);
+  box(confTableGroup, [1.1, 0.72, 0.12], mullionMat, [0, 0.02, 1.4]);
+  box(confTableGroup, [0.18, 0.02, 0.6], mullionMat, [0, 0.78, 0]);
+
+  // 6 Executive Boardroom Chairs (camel leather)
+  const confChairMat = std(0xd8be9c, 0.65);
+  const makeConfChair = (pos: V3, rotY: number) => {
+    const ch = group(confTableGroup, pos, rotY);
+    cyl(ch, 0.24, 0.24, 0.04, chromeMat, [0, 0.06, 0], 12);
+    cyl(ch, 0.03, 0.03, 0.38, chromeMat, [0, 0.1, 0], 8);
+    box(ch, [0.52, 0.08, 0.48], confChairMat, [0, 0.44, 0]);
+    box(ch, [0.5, 0.54, 0.06], confChairMat, [0, 0.52, -0.22]);
+    box(ch, [0.04, 0.24, 0.36], chromeMat, [-0.26, 0.54, 0]);
+    box(ch, [0.04, 0.24, 0.36], chromeMat, [0.26, 0.54, 0]);
+  };
+  makeConfChair([-0.95, 0, -1.3], Math.PI / 2);
+  makeConfChair([-0.95, 0, 0.0], Math.PI / 2);
+  makeConfChair([-0.95, 0, 1.3], Math.PI / 2);
+  makeConfChair([0.95, 0, -1.3], -Math.PI / 2);
+  makeConfChair([0.95, 0, 0.0], -Math.PI / 2);
+  makeConfChair([0.95, 0, 1.3], -Math.PI / 2);
+
+  // Conference Presentation Display Screen on Room Wall
+  const screenTex = conferenceScreenTexture();
+  const screenMat = new THREE.MeshStandardMaterial({
+    map: screenTex,
+    emissive: 0xffffff,
+    emissiveMap: screenTex,
+    emissiveIntensity: 0.85,
+    roughness: 0.2,
+  });
+  const screenMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.45), screenMat);
+  screenMesh.rotation.y = Math.PI / 2;
+  screenMesh.position.set(-10.62, 2.2, -3.2);
+  confRoom.add(screenMesh);
+  box(confRoom, [0.04, 1.52, 2.48], mullionMat, [-10.65, 1.44, -3.2]);
+
+  makeReceptionPlant(-9.8, -7.6, 0.95);
+
+  // Left Foreground Cosmetic Display Showcase Credenza
+  const dispCred = group(hall, [-4.6, 0, 1.8], Math.PI / 2);
+  box(dispCred, [1.8, 0.88, 0.55], marbleDeskMat, [0, 0.02, 0]);
+  box(dispCred, [1.84, 0.03, 0.58], mats.gold, [0, 0.89, 0]);
+  box(dispCred, [1.8, 0.03, 0.03], mats.goldGlow, [0, 0.87, 0.28]);
+  const cosmeticColors = [std(0xf5d3cc, 0.3), std(0xffffff, 0.2), std(0xd4af37, 0.35, 0.6), std(0xcde6ee, 0.3)];
+  for (let i = 0; i < 6; i++) {
+    cyl(dispCred, 0.045, 0.05, 0.18 + (i % 2) * 0.06, cosmeticColors[i % 4], [-0.65 + i * 0.26, 0.92, (Math.random() - 0.5) * 0.16], 10);
+  }
+
+  // 5. Right Wing: Open Office Workstations & Product Display Shelves
+  const workArea = group(hall, [7.2, 0, -2.6]);
+
+  const deskTopMat = std(0xfbfbf9, 0.4);
+  box(workArea, [1.6, 0.05, 2.8], deskTopMat, [0, 0.74, 0]);
+  const privacyMat = std(0xd0e2f2, 0.25, 0.05, { transparent: true, opacity: 0.85 });
+  box(workArea, [0.04, 0.45, 2.6], privacyMat, [0, 0.76, 0]);
+  box(workArea, [1.5, 0.72, 0.06], mullionMat, [0, 0.02, -1.3]);
+  box(workArea, [1.5, 0.72, 0.06], mullionMat, [0, 0.02, 1.3]);
+
+  const makeWorkstationPC = (xPos: number, zPos: number, rotY: number) => {
+    const pc = group(workArea, [xPos, 0.76, zPos], rotY);
+    box(pc, [0.18, 0.015, 0.15], mullionMat, [0, 0, 0]);
+    cyl(pc, 0.018, 0.018, 0.22, mullionMat, [0, 0.01, -0.04], 8);
+    box(pc, [0.55, 0.34, 0.02], imacScreenMat, [0, 0.24, 0]);
+    box(pc, [0.34, 0.012, 0.12], mullionMat, [0, 0, 0.2]);
+  };
+  makeWorkstationPC(-0.45, -0.65, 0.1);
+  makeWorkstationPC(-0.45, 0.65, -0.1);
+  makeWorkstationPC(0.45, -0.65, Math.PI - 0.1);
+  makeWorkstationPC(0.45, 0.65, Math.PI + 0.1);
+
+  const meshChairMat = std(0x22262e, 0.6);
+  const makeTaskChair = (pos: V3, rotY: number) => {
+    const tc = group(workArea, pos, rotY);
+    cyl(tc, 0.26, 0.26, 0.05, chromeMat, [0, 0.06, 0], 12);
+    cyl(tc, 0.035, 0.035, 0.38, chromeMat, [0, 0.1, 0], 8);
+    box(tc, [0.48, 0.08, 0.46], meshChairMat, [0, 0.46, 0]);
+    box(tc, [0.46, 0.54, 0.06], meshChairMat, [0, 0.52, -0.22]);
+  };
+  makeTaskChair([-1.05, 0, -0.65], Math.PI / 2);
+  makeTaskChair([-1.05, 0, 0.65], Math.PI / 2);
+  makeTaskChair([1.05, 0, -0.65], -Math.PI / 2);
+  makeTaskChair([1.05, 0, 0.65], -Math.PI / 2);
+
+  // Right Wall Built-in Illuminated Retail Product Shelving
+  const shelfGroup = group(hall, [10.55, 0, -3.2], -Math.PI / 2);
+  const shelfWood = std(0x8a6442, 0.7);
+  box(shelfGroup, [3.8, 3.2, 0.42], shelfWood, [0, 0.4, -0.2]);
+  for (let sIdx = 0; sIdx < 4; sIdx++) {
+    const yShelf = 0.95 + sIdx * 0.65;
+    box(shelfGroup, [3.6, 0.06, 0.36], std(0xffffff, 0.3), [0, yShelf, 0]);
+    box(shelfGroup, [3.6, 0.03, 0.03], mats.goldGlow, [0, yShelf - 0.03, 0.16]);
+    for (let b = 0; b < 10; b++) {
+      const bX = -1.55 + b * 0.34;
+      const bType = (sIdx + b) % 3;
+      if (bType === 0) {
+        cyl(shelfGroup, 0.045, 0.05, 0.22, cosmeticColors[b % 4], [bX, yShelf + 0.04, 0.02], 10);
+      } else if (bType === 1) {
+        cyl(shelfGroup, 0.065, 0.065, 0.11, std(0xffffff, 0.2), [bX, yShelf + 0.04, 0.02], 12);
+        box(shelfGroup, [0.08, 0.03, 0.08], mats.gold, [bX, yShelf + 0.13, 0.02]);
+      } else {
+        box(shelfGroup, [0.12, 0.24, 0.12], std(0xf7eedc, 0.5), [bX, yShelf + 0.04, 0.02]);
+      }
+    }
+  }
+
+  // Vertical Gold Typography on Right Wall
+  const wallTextTex = officeWallTextTexture();
+  const wallTextMat = new THREE.MeshStandardMaterial({
+    map: wallTextTex,
+    transparent: true,
+    roughness: 0.4,
+    emissive: 0xffd97d,
+    emissiveIntensity: 0.3,
+  });
+  const wallTextPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 3.2), wallTextMat);
+  wallTextPlane.rotation.y = -Math.PI / 2;
+  wallTextPlane.position.set(10.58, 2.1, 0.5);
+  hall.add(wallTextPlane);
+
+  // Drifting warm golden ambient dust motes
+  const moteCount = lowPower ? 28 : 72;
   const moteGeo = new THREE.BufferGeometry();
   const mp = new Float32Array(moteCount * 3);
   for (let i = 0; i < moteCount; i++) {
@@ -659,121 +1112,40 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     moteGeo,
     new THREE.PointsMaterial({
       map: glowSprite("255,220,150"),
-      size: 0.055,
+      size: 0.035,
       color: 0xffe3b0,
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
-      opacity: 0.65,
+      opacity: 0.34,
     })
   );
   hall.add(motes);
 
-  // back-wall seal plaque
-  const seal = sanctuarySealTexture();
-  const sealMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(6.4, 3.2),
-    new THREE.MeshStandardMaterial({ map: seal.tex, emissive: 0xffffff, emissiveMap: seal.tex, emissiveIntensity: 0.6, roughness: 0.6 })
-  );
-  sealMesh.position.set(0, 2.25, -10.2);
-  hall.add(sealMesh);
-  box(hall, [6.8, 3.6, 0.1], mats.navy, [0, 0.45, -10.26]);
-  box(hall, [6.9, 0.07, 0.14], mats.goldGlow, [0, 0.42, -10.2]);
+  // Interior architectural lighting accents
+  const deskSpotL = new THREE.SpotLight(0xffedd2, 4.8, 12, Math.PI / 4, 0.4);
+  deskSpotL.position.set(-2.0, IH - 0.2, -1.8);
+  deskSpotL.target.position.set(-1.0, 1.0, -4.3);
+  campus.add(deskSpotL);
+  campus.add(deskSpotL.target);
 
-  // framed charters on the side walls
-  const charter = charterTexture();
-  const charterMat = new THREE.MeshStandardMaterial({ map: charter, roughness: 0.7 });
-  const charterGeo = new THREE.PlaneGeometry(1.15, 1.44);
-  const charterFrameGeo = new THREE.BoxGeometry(0.06, 1.62, 1.33);
-  for (const side of [-1, 1]) {
-    for (const z of [-7.5, -4.5, -1.5]) {
-      const fr = new THREE.Mesh(charterFrameGeo, mats.gold);
-      fr.position.set(side * 10.68, 2.15, z);
-      hall.add(fr);
-      const ch = new THREE.Mesh(charterGeo, charterMat);
-      ch.position.set(side * 10.62, 2.15, z);
-      ch.rotation.y = side * -Math.PI / 2;
-      hall.add(ch);
-    }
-  }
+  const deskSpotR = new THREE.SpotLight(0xffedd2, 4.8, 12, Math.PI / 4, 0.4);
+  deskSpotR.position.set(2.0, IH - 0.2, -1.8);
+  deskSpotR.target.position.set(1.0, 1.0, -4.3);
+  campus.add(deskSpotR);
+  campus.add(deskSpotR.target);
 
-  // two mirror stations on the left wall
-  const mirrorMat = new THREE.MeshStandardMaterial({ map: mirrorTexture(), roughness: 0.06, metalness: 0.15 });
-  for (const z of [1.2, 3.6]) {
-    const g = group(hall, [-10.6, 0, z], Math.PI / 2);
-    box(g, [1.2, 1.6, 0.06], mats.gold, [0, 0.95, 0]);
-    const mi = new THREE.Mesh(new THREE.PlaneGeometry(1.04, 1.44), mirrorMat);
-    mi.position.set(0, 1.73, 0.05);
-    g.add(mi);
-    box(g, [1.3, 0.07, 0.5], std(0xf2ead9, 0.5), [0, 0.86, 0.26]);
-    box(g, [1.3, 0.04, 0.04], mats.goldGlow, [0, 2.62, 0.05]);
-  }
+  const confWash = new THREE.PointLight(0xffe8cf, 3.6, 10, 1.8);
+  confWash.position.set(-8.0, IH - 0.4, -3.2);
+  campus.add(confWash);
 
-  // treatment beds — two rows flanking the central aisle
-  const bedBase = std(0xe9eef6, 0.6);
-  const bedTop = std(0xf7f3ea, 0.5);
-  const makeBed = (pos: V3, rotY: number) => {
-    const g = group(hall, pos, rotY);
-    box(g, [2.0, 0.55, 0.78], bedBase, [0, 0, 0]);
-    box(g, [2.0, 0.05, 0.05], mats.goldGlow, [0, 0.28, 0.39]);
-    box(g, [1.45, 0.14, 0.8], bedTop, [0.26, 0.55, 0]);
-    const back = box(g, [0.72, 0.13, 0.8], bedTop, [-0.78, 0.72, 0]);
-    back.rotation.z = -0.48;
-    const towel = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.52, 14), std(0xffe9c4, 0.9));
-    towel.rotation.x = Math.PI / 2;
-    towel.position.set(0.88, 0.74, 0);
-    g.add(towel);
-    // magnifier lamp
-    cyl(g, 0.12, 0.15, 0.04, mats.navy, [0.6, 0, 0.62], 14);
-    cyl(g, 0.016, 0.016, 1.35, mats.gold, [0.6, 0.04, 0.62], 8);
-    const halo = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.025, 8, 20), mats.goldGlow);
-    halo.position.set(0.52, 1.42, 0.5);
-    halo.rotation.x = -1.0;
-    g.add(halo);
-    return g;
-  };
-  makeBed([-4.2, 0, -3.2], 0.12);
-  makeBed([-4.2, 0, -6.6], -0.08);
-  makeBed([4.2, 0, -3.2], Math.PI - 0.12);
-  makeBed([4.2, 0, -6.6], Math.PI + 0.08);
+  const workWash = new THREE.PointLight(0xffe8cf, 3.6, 10, 1.8);
+  workWash.position.set(7.6, IH - 0.4, -2.6);
+  campus.add(workWash);
 
-  // product shelf along the right wall with little bottles
-  const shelfG = group(hall, [10.45, 0, 1.9], -Math.PI / 2);
-  box(shelfG, [3.4, 0.08, 0.4], mats.navy, [0, 1.05, 0]);
-  box(shelfG, [3.4, 0.08, 0.4], mats.navy, [0, 1.75, 0]);
-  box(shelfG, [3.5, 0.04, 0.04], mats.goldGlow, [0, 1.0, 0.2]);
-  const bottleCols = [std(0xffffff, 0.35), std(COL.blue, 0.4), std(0xd9b45e, 0.35, 0.4)];
-  for (const y of [1.13, 1.83]) {
-    for (let i = 0; i < 9; i++) {
-      const r = 0.045 + Math.random() * 0.03;
-      cyl(shelfG, r, r, 0.16 + Math.random() * 0.14, bottleCols[i % 3], [-1.5 + i * 0.36, y, (Math.random() - 0.5) * 0.14], 10);
-    }
-  }
-
-  // central emblem rug
-  const rug = new THREE.Mesh(new THREE.CircleGeometry(2.1, 48), std(COL.navy, 0.95));
-  rug.rotation.x = -Math.PI / 2;
-  rug.position.set(0, 0.035, -4.6);
-  hall.add(rug);
-  const rugRing = new THREE.Mesh(new THREE.RingGeometry(1.75, 1.9, 48), new THREE.MeshStandardMaterial({ color: COL.gold, emissive: COL.gold, emissiveIntensity: 0.6 }));
-  rugRing.rotation.x = -Math.PI / 2;
-  rugRing.position.set(0, 0.04, -4.6);
-  hall.add(rugRing);
-
-  // interior lights
-  for (const [x, z, i] of [
-    [0, -2, 7],
-    [-5.5, -6, 5.5],
-    [5.5, -6, 5.5],
-    [0, -8.8, 4],
-  ] as const) {
-    const pl = new THREE.PointLight(0xffe8c8, i, 13, 1.7);
-    pl.position.set(x, IH - 0.5, z);
-    campus.add(pl);
-  }
-  const sealBlue = new THREE.PointLight(0x86b8dc, 2.2, 8, 1.8);
-  sealBlue.position.set(0, 2.2, -8.6);
-  campus.add(sealBlue);
+  const navyWallGlow = new THREE.PointLight(0x76a8dc, 2.4, 8, 1.8);
+  navyWallGlow.position.set(0, 2.5, -9.2);
+  campus.add(navyWallGlow);
 
   // Webfonts may land after first paint — redraw the text textures when ready.
   if (typeof document !== "undefined" && document.fonts?.ready) {
@@ -794,7 +1166,19 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
 
   let target = 0;
   let current = 0;
-  let fovBoost = 0;
+  // PerspectiveCamera.fov is VERTICAL. On narrow/portrait screens a fixed
+  // vertical FOV crops the sides hard, so the scene looks zoomed in. Below a
+  // reference aspect, widen the vertical FOV so the horizontal field of view
+  // matches what a landscape screen sees (capped to avoid fisheye distortion).
+  const FOV_REF_ASPECT = 1.3;
+  const FOV_MAX = 92;
+  function fitFov(baseFov: number) {
+    const aspect = camera.aspect || 1;
+    if (aspect >= FOV_REF_ASPECT) return baseFov;
+    const halfV = THREE.MathUtils.degToRad(baseFov / 2);
+    const fitted = THREE.MathUtils.radToDeg(2 * Math.atan((Math.tan(halfV) * FOV_REF_ASPECT) / aspect));
+    return Math.min(Math.max(baseFov, fitted), Math.max(baseFov, FOV_MAX));
+  }
   let roll = 0;
   const pointer = new THREE.Vector2();
   const pointerSmooth = new THREE.Vector2();
@@ -823,7 +1207,6 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     const h = canvas.clientHeight || window.innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    fovBoost = camera.aspect < 0.75 ? 16 : camera.aspect < 1.1 ? 8 : 0;
     camera.updateProjectionMatrix();
   }
   resize();
@@ -832,9 +1215,11 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
   let lastT = performance.now();
   let el = 0;
   let raf = 0;
+  let active = true;
   let readySent = false;
 
   function tick() {
+    if (!active) return;
     raf = requestAnimationFrame(tick);
     const now = performance.now();
     const dt = Math.min((now - lastT) / 1000, 0.1);
@@ -842,7 +1227,7 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     el += dt;
 
     // heavy chase: the camera eases toward the scroll target instead of snapping
-    current += (target - current) * Math.min(1, dt * 2.15);
+    current += (target - current) * (1 - Math.exp(-dt * 5.2));
     if (Math.abs(target - current) < 1e-5) current = target;
 
     const f = poseAt(current);
@@ -864,10 +1249,10 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     const rollTarget = THREE.MathUtils.clamp(-lateral * 0.0035, -0.07, 0.07) - pointerSmooth.x * 0.012;
     roll += (rollTarget - roll) * Math.min(1, dt * 2.2);
     camera.rotateZ(roll);
-    camera.fov = poseFov + fovBoost;
+    camera.fov = fitFov(poseFov);
     camera.updateProjectionMatrix();
     // exposure warms up as we step inside
-    renderer.toneMappingExposure = 1.03 + 0.13 * smooth(2.7, 3.7, f);
+    renderer.toneMappingExposure = 1.03 + 0.2 * smooth(2.7, 3.7, f);
 
     // the strong sun exists for the real Earth — dim it on the ground so the
     // campus keeps its moody evening light from lamps and windows
@@ -875,6 +1260,7 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     moon.intensity = 2.4 - 1.95 * groundMix;
     fill.intensity = 0.5 - 0.44 * groundMix;
     hemi.intensity = 0.6 - 0.22 * groundMix;
+    hallFill.intensity = 1.15 * groundMix;
 
     // slow idle motion
     stars.rotation.y = el * 0.003;
@@ -914,11 +1300,11 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     motes.rotation.y = Math.sin(el * 0.06) * 0.02;
     motes.position.y = Math.sin(el * 0.3) * 0.07;
 
-    // whiteout through the heart of the cloud deck (descent only)
+    // subtle atmospheric cloud haze during descent (never a solid white screen)
     const cy = camera.position.y;
-    const g = Math.exp(-Math.pow((cy - 60) / 17, 2));
-    whiteMat.opacity = g * 0.96;
-    white.visible = whiteMat.opacity > 0.01;
+    const g = Math.exp(-Math.pow((cy - 60) / 14, 2));
+    whiteMat.opacity = g * 0.16;
+    white.visible = whiteMat.opacity > 0.005;
 
     // swap worlds behind the whiteout
     globe.visible = cy > 50;
@@ -948,8 +1334,19 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     setPointer(x, y) {
       pointer.set(x, y);
     },
+    setActive(nextActive) {
+      if (active === nextActive) return;
+      active = nextActive;
+      if (active) {
+        lastT = performance.now();
+        tick();
+      } else {
+        cancelAnimationFrame(raf);
+      }
+    },
     resize,
     dispose() {
+      active = false;
       cancelAnimationFrame(raf);
       scene.traverse((o) => {
         const m = o as THREE.Mesh;

@@ -1,5 +1,8 @@
 import * as THREE from "three";
 
+export const FONT_DISPLAY = '"Cormorant Garamond", "Bodoni Moda", "Playfair Display", Georgia, serif';
+export const FONT_BODY = '"Plus Jakarta Sans", "Jost", -apple-system, BlinkMacSystemFont, Arial, sans-serif';
+
 function makeCanvas(w: number, h: number) {
   const c = document.createElement("canvas");
   c.width = w;
@@ -260,7 +263,7 @@ export function earthTexture(scale = 1): THREE.CanvasTexture {
     ctx.fill();
 
     if (major) {
-      ctx.font = "700 11px Manrope, Arial, sans-serif";
+      ctx.font = `700 12px ${FONT_BODY}`;
       ctx.fillStyle = label === "PUNE" ? "#ffd97d" : "rgba(235, 248, 255, 0.92)";
       ctx.textAlign = label === "MUMBAI" ? "right" : "left";
       const offX = label === "MUMBAI" ? -8 : 8;
@@ -271,7 +274,7 @@ export function earthTexture(scale = 1): THREE.CanvasTexture {
 
   // Country label INDIA
   ctx.save();
-  ctx.font = "800 22px Playfair Display, Georgia, serif";
+  ctx.font = `800 24px ${FONT_DISPLAY}`;
   ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
   ctx.textAlign = "center";
   const [indLblX, indLblY] = llToXY(23.5, 79.0, W, H);
@@ -288,7 +291,7 @@ export function earthTexture(scale = 1): THREE.CanvasTexture {
   ctx.beginPath();
   ctx.arc(zx, zy, 18, 0, Math.PI * 2);
   ctx.fill();
-  ctx.font = "700 13px Manrope, Arial, sans-serif";
+  ctx.font = `700 13px ${FONT_BODY}`;
   ctx.fillStyle = "#ffd97d";
   ctx.textAlign = "center";
   ctx.fillText("ZURICH HQ · 1946", zx, zy - 12);
@@ -466,7 +469,7 @@ export function puneTerrainTexture(scale = 1): THREE.CanvasTexture {
   ctx.fill();
 
   // City district labels — quiet map annotations
-  ctx.font = "600 15px Manrope, Arial, sans-serif";
+  ctx.font = `600 15px ${FONT_BODY}`;
   ctx.fillStyle = "rgba(236, 232, 220, 0.45)";
   ctx.textAlign = "center";
   ctx.fillText("SHIVAJINAGAR", cx - 85, cy - 75);
@@ -475,10 +478,10 @@ export function puneTerrainTexture(scale = 1): THREE.CanvasTexture {
   ctx.fillText("VIMAN NAGAR", cx + 165, cy - 125);
   ctx.fillText("KOTHRUD", cx - 190, cy + 35);
 
-  ctx.font = "700 22px Playfair Display, Georgia, serif";
+  ctx.font = `700 24px ${FONT_DISPLAY}`;
   ctx.fillStyle = "rgba(236, 230, 214, 0.7)";
   ctx.fillText("PUNE · MAHARASHTRA", cx, cy + 150);
-  ctx.font = "600 13px Manrope, Arial, sans-serif";
+  ctx.font = `600 13px ${FONT_BODY}`;
   ctx.fillStyle = "rgba(220, 214, 200, 0.5)";
   ctx.fillText("ABTC & CIDESCO ACADEMIC CLUSTER", cx, cy + 174);
 
@@ -663,12 +666,12 @@ export function abtcSignTexture(): { tex: THREE.CanvasTexture; redraw: () => voi
     ctx.arc(0, 0, 92, 0, Math.PI * 2);
     ctx.stroke();
     ctx.fillStyle = "#f4efe6";
-    ctx.font = "700 44px Playfair Display, Georgia, serif";
+    ctx.font = `700 44px ${FONT_DISPLAY}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("ABTC", 0, -14);
     ctx.fillStyle = "#d8b367";
-    ctx.font = "700 22px Manrope, Arial, sans-serif";
+    ctx.font = `700 22px ${FONT_BODY}`;
     ctx.fillText("INDIA", 0, 26);
     ctx.restore();
 
@@ -681,27 +684,27 @@ export function abtcSignTexture(): { tex: THREE.CanvasTexture; redraw: () => voi
     ctx.arc(0, 0, 110, 0, Math.PI * 2);
     ctx.stroke();
     ctx.fillStyle = "#d8b367";
-    ctx.font = "700 32px Playfair Display, Georgia, serif";
+    ctx.font = `700 32px ${FONT_DISPLAY}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("CIDESCO", 0, -14);
     ctx.fillStyle = "#e9e4d8";
-    ctx.font = "600 20px Manrope, Arial, sans-serif";
+    ctx.font = `600 20px ${FONT_BODY}`;
     ctx.fillText("ZURICH · 1946", 0, 26);
     ctx.restore();
 
     // Center typography
     ctx.textAlign = "center";
     ctx.fillStyle = "#d8b367";
-    ctx.font = "700 30px Manrope, Arial, sans-serif";
+    ctx.font = `700 30px ${FONT_BODY}`;
     ctx.fillText("INDIAN SECTION OF CIDESCO INTERNATIONAL · REG. NO. FI1552", 1024, 125);
 
     ctx.fillStyle = "#f7f3ea";
-    ctx.font = "700 132px Playfair Display, Georgia, serif";
+    ctx.font = `700 132px ${FONT_DISPLAY}`;
     ctx.fillText("ABTC INDIA", 1024, 285);
 
     ctx.fillStyle = "#cfc7b4";
-    ctx.font = "600 36px Manrope, Arial, sans-serif";
+    ctx.font = `600 36px ${FONT_BODY}`;
     ctx.fillText("ASSOCIATION OF BEAUTY THERAPY & COSMETOLOGY", 1024, 385);
 
     tex.needsUpdate = true;
@@ -712,54 +715,367 @@ export function abtcSignTexture(): { tex: THREE.CanvasTexture; redraw: () => voi
 
 /** Backlit interior feature plaque inside the ABTC Master Sanctuary. */
 export function sanctuarySealTexture(): { tex: THREE.CanvasTexture; redraw: () => void } {
-  const { c, ctx } = makeCanvas(1024, 512);
+  const { c, ctx } = makeCanvas(1024, 680);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
 
   const redraw = () => {
-    const g = ctx.createLinearGradient(0, 0, 1024, 512);
-    g.addColorStop(0, "#05033a");
-    g.addColorStop(0.5, "#17145B");
-    g.addColorStop(1, "#05033a");
+    // Rich midnight navy gradient with subtle warm center illumination
+    const g = ctx.createRadialGradient(512, 260, 40, 512, 340, 680);
+    g.addColorStop(0, "#192454");
+    g.addColorStop(0.45, "#121a3e");
+    g.addColorStop(1, "#0a0f26");
     ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 1024, 512);
+    ctx.fillRect(0, 0, 1024, 680);
 
+    // Outer and inner delicate gold borders
     ctx.strokeStyle = "#ffd97d";
-    ctx.lineWidth = 6;
-    ctx.strokeRect(20, 20, 984, 472);
-    ctx.strokeStyle = "rgba(7, 153, 232, 0.7)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(34, 34, 956, 444);
+    ctx.lineWidth = 4;
+    ctx.strokeRect(28, 28, 968, 624);
 
-    // Emblem rings
+    ctx.strokeStyle = "rgba(255, 217, 125, 0.45)";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(40, 40, 944, 600);
+
+    // Decorative corner notches in gold
+    const cornerSize = 18;
+    ctx.fillStyle = "#ffd97d";
+    ctx.fillRect(36, 36, cornerSize, cornerSize);
+    ctx.fillRect(988 - cornerSize, 36, cornerSize, cornerSize);
+    ctx.fillRect(36, 644 - cornerSize, cornerSize, cornerSize);
+    ctx.fillRect(988 - cornerSize, 644 - cornerSize, cornerSize, cornerSize);
+
+    // Top Emblem laurels & oval ring
     ctx.strokeStyle = "#ffd97d";
-    ctx.lineWidth = 3.5;
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.ellipse(512, 145, 115, 62, 0, 0, Math.PI * 2);
+    ctx.ellipse(512, 105, 95, 48, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(124, 224, 255, 0.6)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(512, 105, 85, 40, 0, 0, Math.PI * 2);
     ctx.stroke();
 
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
-    ctx.font = "700 44px Playfair Display, Georgia, serif";
-    ctx.fillText("ABTC · CIDESCO", 512, 158);
+    ctx.font = `700 24px ${FONT_DISPLAY}`;
+    ctx.fillText("CIDESCO", 512, 112);
 
-    ctx.fillStyle = "#ffd97d";
-    ctx.font = "700 22px Manrope, Arial, sans-serif";
-    ctx.fillText("THE WORLD STANDARD IN BEAUTY & WELLNESS EDUCATION", 512, 268);
-
+    // Main header: ABTC · CIDESCO
     ctx.fillStyle = "#ffffff";
-    ctx.font = "700 56px Playfair Display, Georgia, serif";
-    ctx.fillText("Master Aesthetic Sanctuary", 512, 345);
+    ctx.font = `700 50px ${FONT_DISPLAY}`;
+    ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+    ctx.shadowBlur = 8;
+    ctx.fillText("ABTC · CIDESCO", 512, 195);
+    ctx.shadowBlur = 0;
 
-    ctx.fillStyle = "#7ce0ff";
-    ctx.font = "600 22px Manrope, Arial, sans-serif";
-    ctx.fillText("ZURICH 1946  ·  INDIA 1985  ·  PUNE & MUMBAI", 512, 415);
+    // Subtitle in warm gold caps
+    ctx.fillStyle = "#ffd97d";
+    ctx.font = `700 17px ${FONT_BODY}`;
+    ctx.fillText("THE WORLD STANDARD IN BEAUTY & WELLNESS EDUCATION", 512, 238);
+
+    // Centerpiece title
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `700 54px ${FONT_DISPLAY}`;
+    ctx.shadowColor = "rgba(255, 217, 125, 0.35)";
+    ctx.shadowBlur = 14;
+    ctx.fillText("Master Aesthetic Sanctuary", 512, 310);
+    ctx.shadowBlur = 0;
+
+    // Sub-footer locations with gold dots
+    ctx.fillStyle = "#e0ecff";
+    ctx.font = `600 19px ${FONT_BODY}`;
+    ctx.fillText("ZURICH 1946   •   INDIA 1985   •   PUNE & MUMBAI", 512, 362);
 
     tex.needsUpdate = true;
   };
   redraw();
   return { tex, redraw };
+}
+
+/** Minimalist aesthetic line-art beauty face portraits with soft watercolor washes. */
+export function portraitArtTexture(variant: 1 | 2 = 1): THREE.CanvasTexture {
+  const { c, ctx } = makeCanvas(512, 680);
+  
+  // Warm creamy paper background
+  ctx.fillStyle = "#fcf8f2";
+  ctx.fillRect(0, 0, 512, 680);
+
+  // Soft watercolor gradient wash behind face
+  const wGrad = ctx.createRadialGradient(
+    variant === 1 ? 260 : 250,
+    300,
+    20,
+    variant === 1 ? 260 : 250,
+    300,
+    220
+  );
+  if (variant === 1) {
+    wGrad.addColorStop(0, "rgba(235, 185, 172, 0.45)");
+    wGrad.addColorStop(0.5, "rgba(240, 210, 180, 0.25)");
+    wGrad.addColorStop(1, "rgba(252, 248, 242, 0)");
+  } else {
+    wGrad.addColorStop(0, "rgba(225, 180, 190, 0.45)");
+    wGrad.addColorStop(0.5, "rgba(230, 215, 175, 0.28)");
+    wGrad.addColorStop(1, "rgba(252, 248, 242, 0)");
+  }
+  ctx.fillStyle = wGrad;
+  ctx.fillRect(0, 0, 512, 680);
+
+  // Delicate fine-line portrait sketch
+  ctx.save();
+  ctx.strokeStyle = "#5a4536";
+  ctx.lineWidth = 2.4;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  if (variant === 1) {
+    // Face outline & jaw
+    ctx.beginPath();
+    ctx.moveTo(240, 160);
+    ctx.bezierCurveTo(320, 160, 350, 240, 330, 350);
+    ctx.bezierCurveTo(310, 420, 260, 460, 240, 460);
+    ctx.bezierCurveTo(220, 460, 180, 410, 175, 340);
+    ctx.stroke();
+
+    // Hair flow
+    ctx.beginPath();
+    ctx.moveTo(230, 150);
+    ctx.bezierCurveTo(150, 160, 130, 290, 140, 420);
+    ctx.bezierCurveTo(145, 480, 190, 540, 220, 560);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(270, 150);
+    ctx.bezierCurveTo(370, 160, 380, 310, 360, 460);
+    ctx.stroke();
+
+    // Eyes (serene closed eyes)
+    ctx.beginPath();
+    ctx.arc(215, 290, 18, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(285, 290, 18, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+
+    // Eyebrows
+    ctx.beginPath();
+    ctx.moveTo(195, 270);
+    ctx.quadraticCurveTo(215, 260, 235, 268);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(265, 268);
+    ctx.quadraticCurveTo(285, 260, 305, 270);
+    ctx.stroke();
+
+    // Nose
+    ctx.beginPath();
+    ctx.moveTo(250, 280);
+    ctx.lineTo(252, 335);
+    ctx.quadraticCurveTo(256, 342, 260, 340);
+    ctx.stroke();
+
+    // Lips
+    ctx.beginPath();
+    ctx.moveTo(232, 380);
+    ctx.quadraticCurveTo(250, 372, 268, 380);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(236, 382);
+    ctx.quadraticCurveTo(250, 400, 264, 382);
+    ctx.stroke();
+
+    // Neck lines
+    ctx.beginPath();
+    ctx.moveTo(210, 455);
+    ctx.lineTo(195, 570);
+    ctx.moveTo(280, 450);
+    ctx.lineTo(295, 570);
+    ctx.stroke();
+  } else {
+    // 3/4 angle portrait
+    ctx.beginPath();
+    ctx.moveTo(230, 170);
+    ctx.bezierCurveTo(310, 180, 340, 260, 320, 370);
+    ctx.bezierCurveTo(300, 430, 250, 470, 225, 470);
+    ctx.stroke();
+
+    // Graceful hair sweep
+    ctx.beginPath();
+    ctx.moveTo(220, 150);
+    ctx.bezierCurveTo(340, 140, 380, 260, 360, 430);
+    ctx.bezierCurveTo(350, 500, 300, 560, 240, 580);
+    ctx.stroke();
+
+    // Soft eye profile
+    ctx.beginPath();
+    ctx.arc(265, 295, 16, 0.1, Math.PI - 0.2);
+    ctx.stroke();
+
+    // Eyebrow
+    ctx.beginPath();
+    ctx.moveTo(245, 275);
+    ctx.quadraticCurveTo(265, 266, 285, 276);
+    ctx.stroke();
+
+    // Nose
+    ctx.beginPath();
+    ctx.moveTo(240, 280);
+    ctx.lineTo(235, 338);
+    ctx.lineTo(245, 342);
+    ctx.stroke();
+
+    // Lips
+    ctx.beginPath();
+    ctx.moveTo(230, 385);
+    ctx.quadraticCurveTo(244, 378, 258, 386);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Subtle thin gold border frame inside canvas
+  ctx.strokeStyle = "rgba(196, 165, 106, 0.65)";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(18, 18, 476, 644);
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/** Glowing presentation monitor inside the glass conference room. */
+export function conferenceScreenTexture(): THREE.CanvasTexture {
+  const { c, ctx } = makeCanvas(768, 480);
+
+  // Pure white sleek presentation background
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, 768, 480);
+
+  // Subtle border / bezel glow
+  ctx.strokeStyle = "#e8eef6";
+  ctx.lineWidth = 10;
+  ctx.strokeRect(5, 5, 758, 470);
+
+  // Clean presentation slide content matching the reference image
+  ctx.fillStyle = "#0a1236";
+  ctx.textAlign = "left";
+  ctx.font = `700 48px ${FONT_DISPLAY}`;
+  ctx.fillText("Education", 90, 175);
+  ctx.fillText("Examination", 90, 245);
+  ctx.fillText("Global Recognition", 90, 315);
+
+  // Elegant accent bar
+  ctx.fillStyle = "#ffd97d";
+  ctx.fillRect(90, 95, 60, 5);
+
+  ctx.fillStyle = "#7084a6";
+  ctx.font = `600 18px ${FONT_BODY}`;
+  ctx.fillText("ABTC · CIDESCO ACADEMIC PORTAL", 90, 80);
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/** Vertical gold wall typography for the right office fluted slats. */
+export function officeWallTextTexture(): THREE.CanvasTexture {
+  const { c, ctx } = makeCanvas(320, 640);
+  ctx.clearRect(0, 0, 320, 640);
+
+  ctx.fillStyle = "#ffd97d";
+  ctx.textAlign = "left";
+  ctx.font = `700 28px ${FONT_BODY}`;
+
+  const lines = ["BEAUTY", "EDUCATION", "RESEARCH", "STANDARDS", "GLOBAL NETWORK"];
+  lines.forEach((line, idx) => {
+    ctx.fillText(line, 20, 100 + idx * 72);
+  });
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/** Luxury Calacatta white marble texture for reception desk front and tabletops. */
+export function receptionMarbleTexture(): THREE.CanvasTexture {
+  const { c, ctx } = makeCanvas(1024, 512);
+
+  // Warm ivory marble ground
+  const bg = ctx.createLinearGradient(0, 0, 1024, 512);
+  bg.addColorStop(0, "#fcfbfa");
+  bg.addColorStop(0.5, "#f7f4ed");
+  bg.addColorStop(1, "#f3eee5");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 1024, 512);
+
+  // Soft flowing grey and gold veining
+  ctx.save();
+  ctx.strokeStyle = "rgba(165, 155, 145, 0.24)";
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.moveTo(40, 60);
+  ctx.bezierCurveTo(280, 120, 560, 90, 780, 240);
+  ctx.bezierCurveTo(890, 310, 940, 420, 1010, 480);
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(205, 175, 115, 0.22)";
+  ctx.lineWidth = 2.0;
+  ctx.beginPath();
+  ctx.moveTo(120, 40);
+  ctx.bezierCurveTo(340, 180, 620, 260, 920, 360);
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(145, 140, 135, 0.18)";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(0, 340);
+  ctx.bezierCurveTo(180, 320, 420, 440, 640, 470);
+  ctx.stroke();
+  ctx.restore();
+
+  // Subtle bottom warm light glow simulating kickplate LED
+  const bottomGlow = ctx.createLinearGradient(0, 420, 0, 512);
+  bottomGlow.addColorStop(0, "rgba(255, 230, 180, 0)");
+  bottomGlow.addColorStop(1, "rgba(255, 225, 160, 0.35)");
+  ctx.fillStyle = bottomGlow;
+  ctx.fillRect(0, 420, 1024, 92);
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/** Plush textured lounge rug. */
+export function loungeRugTexture(): THREE.CanvasTexture {
+  const { c, ctx } = makeCanvas(512, 512);
+  ctx.fillStyle = "#d0c3b2";
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Subtle woven fiber texture
+  ctx.fillStyle = "rgba(255, 255, 255, 0.09)";
+  for (let i = 0; i < 512; i += 6) {
+    ctx.fillRect(i, 0, 3, 512);
+  }
+  ctx.fillStyle = "rgba(90, 75, 60, 0.08)";
+  for (let j = 0; j < 512; j += 6) {
+    ctx.fillRect(0, j, 512, 3);
+  }
+
+  // Soft border
+  ctx.strokeStyle = "rgba(245, 235, 220, 0.3)";
+  ctx.lineWidth = 14;
+  ctx.strokeRect(10, 10, 492, 492);
+
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
 }
 
 /** Framed accreditation charter for the Hall of Honour wall. */
@@ -776,18 +1092,18 @@ export function charterTexture(): THREE.CanvasTexture {
 
   ctx.fillStyle = "#17145B";
   ctx.textAlign = "center";
-  ctx.font = "700 28px Playfair Display, Georgia, serif";
+  ctx.font = `700 28px ${FONT_DISPLAY}`;
   ctx.fillText("CIDESCO INTERNATIONAL", 256, 120);
   ctx.fillStyle = "#0799E8";
-  ctx.font = "700 18px Manrope, Arial, sans-serif";
+  ctx.font = `700 18px ${FONT_BODY}`;
   ctx.fillText("ZURICH · SWITZERLAND", 256, 155);
 
   ctx.fillStyle = "#17145B";
-  ctx.font = "italic 600 34px Playfair Display, Georgia, serif";
+  ctx.font = `italic 600 34px ${FONT_DISPLAY}`;
   ctx.fillText("Official National Charter", 256, 240);
 
   ctx.fillStyle = "#474650";
-  ctx.font = "500 18px Manrope, Arial, sans-serif";
+  ctx.font = `500 18px ${FONT_BODY}`;
   ctx.fillText("Association of Beauty Therapy", 256, 310);
   ctx.fillText("& Cosmetology (India)", 256, 338);
   ctx.fillText("Registered No. FI1552", 256, 380);

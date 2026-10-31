@@ -18,16 +18,16 @@ const wrap = (min: number, max: number, v: number) => {
 };
 
 /**
- * Scroll-velocity marquee: drifts on its own, speeds up and reverses
- * direction with scroll. Track holds 4 copies; one copy = 25% of width.
+ * Scroll-velocity marquee: gently drifts with calm luxury pacing, subtly
+ * reacting to scroll speed without rushing. Track holds 4 copies; one copy = 25% of width.
  */
-export function Marquee({ items, speed = 2.2 }: { items: string[]; speed?: number }) {
+export function Marquee({ items, speed = 0.55 }: { items: string[]; speed?: number }) {
   const reduce = useReducedMotion();
   const base = useMotionValue(0);
   const { scrollY } = useScroll();
   const velocity = useVelocity(scrollY);
-  const smooth = useSpring(velocity, { damping: 50, stiffness: 400 });
-  const factor = useTransform(smooth, [0, 1000], [0, 5], { clamp: false });
+  const smooth = useSpring(velocity, { damping: 60, stiffness: 350 });
+  const factor = useTransform(smooth, [0, 1000], [0, 0.8], { clamp: false });
   const dir = useRef(-1);
 
   useAnimationFrame((_, delta) => {

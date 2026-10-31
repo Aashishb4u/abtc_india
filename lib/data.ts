@@ -1,25 +1,24 @@
 export const NAV = [
   { label: "Home", href: "/" },
   {
-    label: "About",
+    label: "About Us",
     href: "/about",
     children: [
-      { label: "About Us", href: "/about" },
+      { label: "About ABTC", href: "/about" },
       { label: "About CIDESCO", href: "/cidesco" },
     ],
   },
   { label: "Committee", href: "/committee" },
-  { label: "Accreditations", href: "/accreditations" },
-  { label: "Education", href: "/education" },
   {
-    label: "Gallery",
-    href: "/gallery",
+    label: "More",
+    href: "/accreditations",
     children: [
-      { label: "ABTC Events", href: "/gallery" },
-      { label: "CIDESCO Events", href: "/gallery/cidesco" },
+      { label: "Accreditations", href: "/accreditations" },
+      { label: "Education", href: "/education" },
+      { label: "FAQ", href: "/faq" },
+      { label: "Gallery", href: "/gallery" },
     ],
   },
-  { label: "FAQ", href: "/faq" },
   { label: "Contact Us", href: "/contact" },
 ] as const;
 

@@ -19,10 +19,10 @@ export function SmoothScroll() {
     if (reduce) return;
 
     const lenis = new Lenis({
-      duration: 1.55,
+      duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      anchors: { offset: -110, duration: 1.6 },
+      anchors: { offset: -110, duration: 1.05 },
     });
     lenisRef.current = lenis;
     setLenis(lenis);

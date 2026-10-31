@@ -15,15 +15,19 @@ import { getLenis } from "@/lib/lenis";
  * progress, which the Three.js scene turns into a smooth camera flight.
  */
 
-const VH_PER_STOP = 260; // taller track = slower, more cinematic travel
+// One viewport per stop keeps the scroll story deliberate without making the
+// opening feel like an obstacle before visitors can reach the rest of the site.
+const VH_PER_STOP = 100;
 
 export function JourneyHero() {
   const trackRef = useRef<HTMLElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const railBarRef = useRef<HTMLSpanElement>(null);
   const sceneRef = useRef<JourneyScene | null>(null);
   const [ready, setReady] = useState(false);
   const [noGL, setNoGL] = useState(false);
-  const [pos, setPos] = useState(0); // progress * (stops - 1)
+  const [stage, setStage] = useState({ index: 0, settled: true });
 
   useEffect(() => {
     let disposed = false;
@@ -55,22 +59,45 @@ export function JourneyHero() {
         trigger: track,
         start: "top top",
         end: "bottom bottom",
+        pin: stickyRef.current ?? ".jh-sticky",
+        pinSpacing: false,
+        anticipatePin: 1,
         onUpdate: (self) => {
           scene.setProgress(self.progress);
-          setPos(Math.round(progressToFloatIndex(self.progress) * 100) / 100);
+          const journeyPosition = progressToFloatIndex(self.progress);
+          const index = Math.round(journeyPosition);
+          const settled = Math.abs(journeyPosition - index) < 0.46;
+          setStage((current) =>
+            current.index === index && current.settled === settled ? current : { index, settled }
+          );
+          if (railBarRef.current) {
+            railBarRef.current.style.transform = `scaleY(${Math.min(1, journeyPosition / (JOURNEY_STOPS.length - 1))})`;
+          }
         },
       });
+
+      // Recalculate ScrollTrigger markers and pinning with actual layout
+      ScrollTrigger.refresh();
+
+      const visibility = new IntersectionObserver(([entry]) => {
+        scene.setActive(entry.isIntersecting);
+      });
+      visibility.observe(track);
 
       const onMove = (e: PointerEvent) => {
         scene.setPointer((e.clientX / window.innerWidth) * 2 - 1, -((e.clientY / window.innerHeight) * 2 - 1));
       };
-      const onResize = () => scene.resize();
+      const onResize = () => {
+        scene.resize();
+        ScrollTrigger.refresh();
+      };
       window.addEventListener("pointermove", onMove, { passive: true });
       window.addEventListener("resize", onResize);
 
       cleanups.push(() => {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("resize", onResize);
+        visibility.disconnect();
         st.kill();
         scene.dispose();
         sceneRef.current = null;
@@ -84,15 +111,15 @@ export function JourneyHero() {
   }, []);
 
   const n = JOURNEY_STOPS.length - 1;
-  const active = Math.round(pos);
-  const visible = Math.abs(pos - active) < 0.3;
+  const active = stage.index;
+  const visible = stage.settled;
 
   const goTo = (i: number) => {
     const track = trackRef.current;
     if (!track) return;
     const top = track.offsetTop + (track.offsetHeight - window.innerHeight) * floatIndexToProgress(i);
     const lenis = getLenis();
-    if (lenis) lenis.scrollTo(top, { duration: 3.6 });
+    if (lenis) lenis.scrollTo(top, { duration: 1.45 });
     else window.scrollTo({ top, behavior: "smooth" });
   };
 
@@ -100,10 +127,10 @@ export function JourneyHero() {
     <section
       ref={trackRef}
       className="jh-track -mt-6"
-      style={{ height: `${JOURNEY_STOPS.length * VH_PER_STOP}vh` }}
+      style={{ height: `${JOURNEY_STOPS.length * VH_PER_STOP}svh` }}
       aria-label="Journey from Earth orbit to ABTC India"
     >
-      <div className="jh-sticky">
+      <div ref={stickyRef} className="jh-sticky">
         <canvas ref={canvasRef} className={`jh-canvas ${ready ? "is-ready" : ""}`} aria-hidden="true" />
 
         {!ready && !noGL && (
@@ -133,8 +160,21 @@ export function JourneyHero() {
                 <dl className="jh-facts">
                   {s.facts.map((f) => (
                     <div key={f.label}>
-                      <dt>{f.label}</dt>
-                      <dd>{f.value}</dd>
+                      <span className="material-symbols-outlined jh-fact-icon" aria-hidden="true">
+                        {f.label.toLowerCase().includes("global")
+                          ? "public"
+                          : f.label.toLowerCase().includes("founded")
+                            ? "account_balance"
+                            : f.label.toLowerCase().includes("recognition")
+                              ? "verified"
+                              : f.label.toLowerCase().includes("alumni")
+                                ? "groups"
+                                : "school"}
+                      </span>
+                      <span className="jh-fact-copy">
+                        <dt>{f.label}</dt>
+                        <dd>{f.value}</dd>
+                      </span>
                     </div>
                   ))}
                 </dl>
@@ -166,18 +206,44 @@ export function JourneyHero() {
         {/* progress rail */}
         <nav className="jh-rail" aria-label="Journey scenes">
           {JOURNEY_STOPS.map((s, i) => (
-            <button key={s.id} className={`jh-rail-item ${i === active ? "is-active" : ""}`} onClick={() => goTo(i)}>
+            <button
+              key={s.id}
+              className={`jh-rail-item ${i === active ? "is-active" : ""}`}
+              onClick={() => goTo(i)}
+              aria-current={i === active ? "step" : undefined}
+              aria-label={`${s.index} ${s.location}`}
+            >
               <span className="jh-rail-num">{s.index}</span>
               <span className="jh-rail-label">{s.location}</span>
+              <span className="jh-rail-arrow" aria-hidden="true">›</span>
             </button>
           ))}
-          <span className="jh-rail-bar" style={{ transform: `scaleY(${Math.min(1, pos / n)})` }} />
+          <span ref={railBarRef} className="jh-rail-bar" />
         </nav>
 
-        <div className={`jh-scroll-hint ${pos > 0.12 ? "is-hidden" : ""}`} aria-hidden>
-          <span />
-          Scroll to travel
-        </div>
+        <button
+          type="button"
+          onClick={() => goTo(1)}
+          className={`jh-scroll-hint ${stage.index > 0 || !stage.settled ? "is-hidden" : ""}`}
+          aria-label="Scroll down to begin journey"
+        >
+          <span className="jh-mouse-pill" aria-hidden="true">
+            <span className="jh-mouse-wheel" />
+          </span>
+          <span className="jh-arrow-stack" aria-hidden="true">
+            <span className="jh-arrow jh-arrow-1">
+              <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
+            <span className="jh-arrow jh-arrow-2">
+              <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
+          </span>
+          <span className="jh-scroll-text">Scroll to explore</span>
+        </button>
       </div>
     </section>
   );

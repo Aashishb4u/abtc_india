@@ -4,17 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { NAV } from "@/lib/data";
+import { IMAGES, NAV } from "@/lib/data";
 import { getLenis } from "@/lib/lenis";
 import { cn } from "@/lib/utils";
-import { AbtcSeal } from "@/components/ui/Seals";
 import { Icon } from "@/components/ui/Icon";
 import { EASE } from "@/components/motion/Reveal";
 
 const ICONS: Record<string, string> = {
   Home: "home",
+  "About Us": "account_balance",
   About: "account_balance",
   Committee: "groups",
+  More: "more_horiz",
   Accreditations: "verified",
   Education: "school",
   Gallery: "photo_library",
@@ -62,16 +63,16 @@ export function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => 
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ duration: 0.65, ease: EASE }}
-            className="fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw] flex-col border-r border-white/10 bg-midnight/95 text-white shadow-glass-dark backdrop-blur-2xl"
+            className="glass-panel fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw] flex-col border-r border-white/20 bg-[#030822]/90 text-white backdrop-blur-2xl"
           >
             <div className="flex h-full flex-col space-y-6 overflow-y-auto p-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div className="flex items-center gap-3">
-                  <AbtcSeal tone="dark" className="h-7 w-9" />
+                  <img src={IMAGES.logo} alt="ABTC India" className="h-8 w-10 object-contain" />
                   <div>
-                    <p className="font-display text-sm font-bold leading-tight">ABTC INDIA</p>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-electric-blue">
-                      CIDESCO Section FI1552
+                    <p className="font-display text-base font-bold leading-tight">ABTC INDIA</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-cyan-300">
+                      CIDESCO SECTION · FI1552
                     </p>
                   </div>
                 </div>
