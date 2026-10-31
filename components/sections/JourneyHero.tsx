@@ -21,9 +21,16 @@ export function JourneyHero() {
   const trackRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<JourneyScene | null>(null);
+  const railBarRef = useRef<HTMLSpanElement>(null);
+  const scrollHintRef = useRef<HTMLDivElement>(null);
+  const lastActiveRef = useRef(0);
+  const lastVisibleRef = useRef(true);
+
   const [ready, setReady] = useState(false);
   const [noGL, setNoGL] = useState(false);
-  const [pos, setPos] = useState(0); // progress * (stops - 1)
+  const [{ active, visible }, setStopState] = useState({ active: 0, visible: true });
+
+  const n = JOURNEY_STOPS.length - 1;
 
   useEffect(() => {
     let disposed = false;
@@ -57,7 +64,26 @@ export function JourneyHero() {
         end: "bottom bottom",
         onUpdate: (self) => {
           scene.setProgress(self.progress);
-          setPos(Math.round(progressToFloatIndex(self.progress) * 100) / 100);
+          const floatIdx = progressToFloatIndex(self.progress);
+          const curActive = Math.round(floatIdx);
+          const curVisible = Math.abs(floatIdx - curActive) < 0.3;
+
+          if (railBarRef.current) {
+            railBarRef.current.style.transform = `scaleY(${Math.min(1, floatIdx / n)})`;
+          }
+          if (scrollHintRef.current) {
+            if (self.progress > 0.03) {
+              scrollHintRef.current.classList.add("is-hidden");
+            } else {
+              scrollHintRef.current.classList.remove("is-hidden");
+            }
+          }
+
+          if (curActive !== lastActiveRef.current || curVisible !== lastVisibleRef.current) {
+            lastActiveRef.current = curActive;
+            lastVisibleRef.current = curVisible;
+            setStopState({ active: curActive, visible: curVisible });
+          }
         },
       });
 
@@ -66,7 +92,7 @@ export function JourneyHero() {
       };
       const onResize = () => scene.resize();
       window.addEventListener("pointermove", onMove, { passive: true });
-      window.addEventListener("resize", onResize);
+      window.addEventListener("resize", onResize, { passive: true });
 
       cleanups.push(() => {
         window.removeEventListener("pointermove", onMove);
@@ -81,18 +107,14 @@ export function JourneyHero() {
       disposed = true;
       cleanups.forEach((f) => f());
     };
-  }, []);
-
-  const n = JOURNEY_STOPS.length - 1;
-  const active = Math.round(pos);
-  const visible = Math.abs(pos - active) < 0.3;
+  }, [n]);
 
   const goTo = (i: number) => {
     const track = trackRef.current;
     if (!track) return;
     const top = track.offsetTop + (track.offsetHeight - window.innerHeight) * floatIndexToProgress(i);
     const lenis = getLenis();
-    if (lenis) lenis.scrollTo(top, { duration: 3.6 });
+    if (lenis) lenis.scrollTo(top, { duration: 2.2 });
     else window.scrollTo({ top, behavior: "smooth" });
   };
 
@@ -171,10 +193,10 @@ export function JourneyHero() {
               <span className="jh-rail-label">{s.location}</span>
             </button>
           ))}
-          <span className="jh-rail-bar" style={{ transform: `scaleY(${Math.min(1, pos / n)})` }} />
+          <span ref={railBarRef} className="jh-rail-bar" style={{ transform: "scaleY(0)" }} />
         </nav>
 
-        <div className={`jh-scroll-hint ${pos > 0.12 ? "is-hidden" : ""}`} aria-hidden>
+        <div ref={scrollHintRef} className="jh-scroll-hint" aria-hidden>
           <span />
           Scroll to travel
         </div>

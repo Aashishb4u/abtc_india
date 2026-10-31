@@ -61,8 +61,8 @@ export function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => 
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
-            transition={{ duration: 0.65, ease: EASE }}
-            className="fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw] flex-col border-r border-white/10 bg-midnight/95 text-white shadow-glass-dark backdrop-blur-2xl"
+            transition={{ duration: 0.45, ease: EASE }}
+            className="fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw] flex-col border-r border-white/10 bg-midnight/95 text-white shadow-glass-dark backdrop-blur-2xl will-change-transform"
           >
             <div className="flex h-full flex-col space-y-6 overflow-y-auto p-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">

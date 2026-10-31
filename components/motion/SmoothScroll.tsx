@@ -19,10 +19,12 @@ export function SmoothScroll() {
     if (reduce) return;
 
     const lenis = new Lenis({
-      duration: 1.55,
+      duration: 1.25,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      anchors: { offset: -110, duration: 1.6 },
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.2,
+      anchors: { offset: -110, duration: 1.4 },
     });
     lenisRef.current = lenis;
     setLenis(lenis);
@@ -31,7 +33,8 @@ export function SmoothScroll() {
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
-    gsap.ticker.lagSmoothing(0);
+    // Smooth lag compensation: catches up smoothly over drops instead of hard-jumping
+    gsap.ticker.lagSmoothing(500, 33);
 
     return () => {
       gsap.ticker.remove(tick);

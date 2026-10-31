@@ -26,17 +26,26 @@ export function Marquee({ items, speed = 2.2 }: { items: string[]; speed?: numbe
   const base = useMotionValue(0);
   const { scrollY } = useScroll();
   const velocity = useVelocity(scrollY);
-  const smooth = useSpring(velocity, { damping: 50, stiffness: 400 });
-  const factor = useTransform(smooth, [0, 1000], [0, 5], { clamp: false });
+  const smooth = useSpring(velocity, { damping: 60, stiffness: 350 });
+  const factor = useTransform(smooth, [0, 1000], [0, 4.5], { clamp: false });
   const dir = useRef(-1);
+  const currentSpeed = useRef(speed);
 
   useAnimationFrame((_, delta) => {
     if (reduce) return;
+    // Clamp delta to prevent sudden jumps on tab switch / GC hiccups
+    const dt = Math.min(delta, 50) / 1000;
     const f = factor.get();
-    if (f < -0.05) dir.current = 1;
-    else if (f > 0.05) dir.current = -1;
-    let move = dir.current * speed * (delta / 1000);
-    move += dir.current * Math.abs(f) * speed * (delta / 1000);
+
+    // Smoothly ease direction instead of snapping hard
+    const targetDir = f < -0.08 ? 1 : f > 0.08 ? -1 : dir.current;
+    dir.current += (targetDir - dir.current) * Math.min(1, dt * 8);
+
+    // Target velocity with smooth acceleration and gentle decay
+    const targetSpeed = speed * (1 + Math.min(Math.abs(f), 4.5));
+    currentSpeed.current += (targetSpeed - currentSpeed.current) * Math.min(1, dt * 10);
+
+    const move = dir.current * currentSpeed.current * dt;
     base.set(base.get() + move);
   });
 

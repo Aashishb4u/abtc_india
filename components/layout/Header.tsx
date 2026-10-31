@@ -35,9 +35,9 @@ export function Header() {
         {/* Institutional bar — collapses on scroll */}
         <motion.div
           initial={false}
-          animate={{ height: compact ? 0 : "auto", opacity: compact ? 0 : 1 }}
-          transition={{ duration: 0.55, ease: EASE }}
-          className="hidden overflow-hidden border-b border-royal-navy/10 bg-white/95 shadow-sm backdrop-blur-md md:block"
+          animate={{ maxHeight: compact ? 0 : 96, opacity: compact ? 0 : 1 }}
+          transition={{ duration: 0.45, ease: EASE }}
+          className="hidden overflow-hidden border-b border-royal-navy/10 bg-white/95 shadow-sm backdrop-blur-md will-change-[max-height,opacity] md:block"
         >
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
             <Link href="/" aria-label="ABTC India home" className="flex-shrink-0 transition-transform duration-300 hover:scale-105">

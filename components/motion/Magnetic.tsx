@@ -15,19 +15,29 @@ export function Magnetic({
   strength?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const rectRef = useRef<DOMRect | null>(null);
   const reduce = useReducedMotion();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const sx = useSpring(x, { stiffness: 220, damping: 16, mass: 0.4 });
-  const sy = useSpring(y, { stiffness: 220, damping: 16, mass: 0.4 });
+  const sx = useSpring(x, { stiffness: 220, damping: 18, mass: 0.35 });
+  const sy = useSpring(y, { stiffness: 220, damping: 18, mass: 0.35 });
+
+  const onEnter = () => {
+    if (ref.current) rectRef.current = ref.current.getBoundingClientRect();
+  };
 
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (reduce || e.pointerType !== "mouse" || !ref.current) return;
-    const r = ref.current.getBoundingClientRect();
+    if (reduce || e.pointerType !== "mouse") return;
+    if (!rectRef.current && ref.current) {
+      rectRef.current = ref.current.getBoundingClientRect();
+    }
+    const r = rectRef.current;
+    if (!r) return;
     x.set((e.clientX - (r.left + r.width / 2)) * strength);
     y.set((e.clientY - (r.top + r.height / 2)) * strength);
   };
   const onLeave = () => {
+    rectRef.current = null;
     x.set(0);
     y.set(0);
   };
@@ -35,10 +45,11 @@ export function Magnetic({
   return (
     <motion.div
       ref={ref}
+      onPointerEnter={onEnter}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
       style={{ x: sx, y: sy }}
-      className={cn("inline-block", className)}
+      className={cn("inline-block will-change-transform", className)}
     >
       {children}
     </motion.div>

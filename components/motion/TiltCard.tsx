@@ -31,19 +31,28 @@ export function TiltCard({
   spotlight = true,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
+  const rectRef = useRef<DOMRect | null>(null);
   const reduce = useReducedMotion();
 
   const rx = useMotionValue(0);
   const ry = useMotionValue(0);
-  const sx = useSpring(rx, { stiffness: 170, damping: 18, mass: 0.5 });
-  const sy = useSpring(ry, { stiffness: 170, damping: 18, mass: 0.5 });
+  const sx = useSpring(rx, { stiffness: 180, damping: 20, mass: 0.4 });
+  const sy = useSpring(ry, { stiffness: 180, damping: 20, mass: 0.4 });
   const mx = useMotionValue(-999);
   const my = useMotionValue(-999);
   const bg = useMotionTemplate`radial-gradient(520px circle at ${mx}px ${my}px, rgba(7,153,232,0.16), transparent 60%)`;
 
+  const onEnter = () => {
+    if (ref.current) rectRef.current = ref.current.getBoundingClientRect();
+  };
+
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (reduce || e.pointerType !== "mouse" || !ref.current) return;
-    const r = ref.current.getBoundingClientRect();
+    if (reduce || e.pointerType !== "mouse") return;
+    if (!rectRef.current && ref.current) {
+      rectRef.current = ref.current.getBoundingClientRect();
+    }
+    const r = rectRef.current;
+    if (!r) return;
     const x = e.clientX - r.left;
     const y = e.clientY - r.top;
     mx.set(x);
@@ -53,6 +62,7 @@ export function TiltCard({
   };
 
   const onLeave = () => {
+    rectRef.current = null;
     rx.set(0);
     ry.set(0);
     mx.set(-999);
@@ -62,6 +72,7 @@ export function TiltCard({
   return (
     <motion.div
       ref={ref}
+      onPointerEnter={onEnter}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
       whileHover={reduce ? undefined : { scale }}

@@ -8,20 +8,21 @@ export const EASE = [0.16, 1, 0.3, 1] as const;
 
 type BaseProps = { children: ReactNode; className?: string };
 
-/** Fade + rise + de-blur when scrolled into view. */
+/** Smooth fade + rise when scrolled into view (pure GPU transforms, zero blur jank). */
 export function Reveal({
   children,
   className,
   delay = 0,
-  y = 32,
+  y = 28,
 }: BaseProps & { delay?: number; y?: number }) {
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y, filter: "blur(6px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      viewport={{ once: true, margin: "0px 0px -12% 0px" }}
-      transition={{ duration: 1, ease: EASE, delay }}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+      transition={{ duration: 0.85, ease: EASE, delay }}
+      style={{ willChange: "transform, opacity" }}
     >
       {children}
     </motion.div>
@@ -54,12 +55,11 @@ const container = (stagger: number, delay: number): Variants => ({
 });
 
 const item: Variants = {
-  hidden: { opacity: 0, y: 36, filter: "blur(6px)" },
+  hidden: { opacity: 0, y: 28 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.95, ease: EASE },
+    transition: { duration: 0.85, ease: EASE },
   },
 };
 

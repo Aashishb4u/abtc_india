@@ -117,9 +117,9 @@ function alignedBasis(f: THREE.Vector3) {
 export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneySceneOptions = {}): JourneyScene {
   const lowPower = !!opts.lowPower;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !lowPower, powerPreference: "high-performance" });
-  // Ultra-crisp output: supersample up to 3x on capable machines ("4K mode")
+  // Crisp Retina output capped at 2x (1.5x on lowPower) for silky 60/120fps performance
   const dpr = window.devicePixelRatio || 1;
-  renderer.setPixelRatio(lowPower ? Math.min(dpr, 1.5) : Math.min(Math.max(dpr, 2), 3));
+  renderer.setPixelRatio(Math.min(dpr, lowPower ? 1.5 : 2));
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   // Neutral tone mapping keeps skin/peach/gold colours true (ACES muddies pastels)
@@ -598,10 +598,10 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     lastT = now;
     el += dt;
 
-    // critically-damped spring chase: the camera accelerates and settles like a
-    // real dolly instead of the abrupt start of a plain exponential ease
+    // Critically-damped spring chase: responsive dolly acceleration and deceleration
+    // tuned to match Lenis smooth scroll without sluggish rubber-banding
     {
-      const om = 2 / 0.62;
+      const om = 2 / 0.22;
       const x = om * dt;
       const ex = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
       const change = current - target;
@@ -617,7 +617,7 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     const f = poseAt(current);
 
     // pointer parallax scaled by distance so it feels equal at every altitude
-    pointerSmooth.lerp(pointer, Math.min(1, dt * 3));
+    pointerSmooth.lerp(pointer, Math.min(1, dt * 3.5));
     const dist = tmpPos.distanceTo(tmpLook);
     tmpLook.x += pointerSmooth.x * dist * 0.016;
     tmpLook.y += pointerSmooth.y * dist * 0.01;
@@ -637,11 +637,11 @@ export function createJourneyScene(canvas: HTMLCanvasElement, opts: JourneyScene
     prevPos.copy(tmpPos);
     camera.position.copy(tmpPos);
     camera.lookAt(tmpLook);
-    // cinematic banking: lean into lateral motion like a pilot would
+    // cinematic banking: lean into lateral motion smoothly
     rightV.set(1, 0, 0).applyQuaternion(camera.quaternion);
     const lateral = velV.dot(rightV) / Math.max(dt, 1e-3);
-    const rollTarget = THREE.MathUtils.clamp(-lateral * 0.0035, -0.07, 0.07) - pointerSmooth.x * 0.012;
-    roll += (rollTarget - roll) * Math.min(1, dt * 2.2);
+    const rollTarget = THREE.MathUtils.clamp(-lateral * 0.0025, -0.05, 0.05) - pointerSmooth.x * 0.01;
+    roll += (rollTarget - roll) * Math.min(1, dt * 3.0);
     camera.rotateZ(roll);
     camera.fov = poseFov + fovBoost;
     camera.updateProjectionMatrix();
